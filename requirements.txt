@@ -1,0 +1,12 @@
+numpy==1.26.3 
+torch==2.2.1
+torchaudio==2.2.1
+torchvision==0.17.1
+pytorch-lightning==2.3.3
+wandb
+transformers==4.43.1
+soundfile==0.12.1
+av==12.3.0
+openai-whisper
+
+
