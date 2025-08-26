@@ -71,7 +71,7 @@ class ModelModule_LLM(LightningModule):
                     (f"{eos}", self.tokenizer.eos_token_id)
                     ],
                 )
-        elif args.llm_model in ["Qwen/Qwen2.5-0.5B", "Qwen/Qwen2.5-1.5B", "Qwen/Qwen2.5-3B", "Qwen/Qwen2.5-7B"]:
+        elif "Qwen" in args.llm_model:
             eos = self.tokenizer.eos_token
 
             self.tokenizer._tokenizer.post_processor = TemplateProcessing(
@@ -152,7 +152,9 @@ class ModelModule_LLM(LightningModule):
                     IS_QWEN25_1_5B = True if args.llm_model == "Qwen/Qwen2.5-1.5B" else False
                     IS_QWEN25_3B = True if args.llm_model == "Qwen/Qwen2.5-3B" else False
                     IS_QWEN25_7B = True if args.llm_model == "Qwen/Qwen2.5-7B" else False
-                    lora_config_llm = QwenLoRA_config(args.rank, args.alpha, IS_QWEN25_0_5B, IS_QWEN25_1_5B, IS_QWEN25_3B, IS_QWEN25_7B)
+                    IS_QWEN25_14B = True if args.llm_model == "Qwen/Qwen2.5-14B" else False
+                    IS_QWEN25_32B = True if args.llm_model == "Qwen/Qwen2.5-32B" else False
+                    lora_config_llm = QwenLoRA_config(args.rank, args.alpha, IS_QWEN25_0_5B, IS_QWEN25_1_5B, IS_QWEN25_3B, IS_QWEN25_7B, IS_QWEN25_14B, IS_QWEN25_32B, args.is_task_specific, args.use_shared_lora_task_specific)
                 else:
                     IS_LLAMA3 = True if args.llm_model == "meta-llama/Meta-Llama-3-8B" or args.llm_model == "meta-llama/Meta-Llama-3.1-8B" or args.llm_model == "mistralai/Mistral-7B-v0.1" or args.llm_model == "meta-llama/Llama-3.2-1B" else False
                     IS_LLAMA3_2_3B = True if args.llm_model == "meta-llama/Llama-3.2-3B" else False

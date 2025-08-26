@@ -515,7 +515,7 @@ class AVSR_LLMs(nn.Module):
                                                 pad_token_id = self.tokenizer.vocab["<pad>"],
                                                 #repetition_penalty=1.5
                                                 )
-            elif self.llm_model in ["Qwen/Qwen2.5-0.5B", "Qwen/Qwen2.5-1.5B", "Qwen/Qwen2.5-3B", "Qwen/Qwen2.5-7B"]:
+            elif "Qwen" in self.llm_model:
                 decoded_ids = self.llm.generate(inputs_embeds = embeddings, max_new_tokens = self.max_dec_tokens, num_beams=self.num_beams, eos_token_id = self.tokenizer.vocab["<|endoftext|>"], 
                                                 pad_token_id = self.tokenizer.vocab["<|endoftext|>"],
                                                 modality = modality

@@ -48,7 +48,7 @@ def collate_LLM(batch, tokenizer, modality, is_trainval= True):
         tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<s>"]]).unsqueeze(0)
     elif tokenizer.name_or_path in ["google/gemma-2b","google/gemma-7b", "google/gemma-2-9b"]:
         tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<bos>"]]).unsqueeze(0)
-    elif tokenizer.name_or_path in ["Qwen/Qwen2.5-0.5B","Qwen/Qwen2.5-1.5B","Qwen/Qwen2.5-3B","Qwen/Qwen2.5-7B"]:
+    elif "Qwen" in tokenizer.name_or_path:
         tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([[]], dtype=torch.long)
     else:
         assert tokenizer.name_or_path == "meta-llama/Meta-Llama-3-8B" or tokenizer.name_or_path == "meta-llama/Meta-Llama-3.1-8B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-1B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-3B"
