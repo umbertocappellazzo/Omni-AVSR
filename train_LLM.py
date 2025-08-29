@@ -129,7 +129,7 @@ def parse_args():
                   "mistralai/Mistral-7B-v0.1", 
                   "meta-llama/Meta-Llama-3-8B", "meta-llama/Meta-Llama-3.1-8B", "meta-llama/Llama-3.2-1B","meta-llama/Llama-3.2-3B",
                   "Qwen/Qwen2-1.5B", "Qwen/Qwen2-7B",
-                  "Qwen/Qwen2.5-0.5B", "Qwen/Qwen2.5-1.5B", "Qwen/Qwen2.5-3B", "Qwen/Qwen2.5-7B"]
+                  "Qwen/Qwen2.5-0.5B", "Qwen/Qwen2.5-1.5B", "Qwen/Qwen2.5-3B", "Qwen/Qwen2.5-7B", "Qwen/Qwen2.5-14B", "Qwen/Qwen2.5-32B"]
     )
     parser.add_argument(
         "--hidden-size",
