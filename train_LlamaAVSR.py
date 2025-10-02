@@ -380,6 +380,12 @@ def cli_main():
     
     if args.slurm_job_id != -1:
         args.slurm_job_id = os.environ["SLURM_JOB_ID"]
+        
+    if not args.is_matryoshka:
+        if type(args.downsample_ratio_audio) == list:
+            args.downsample_ratio_audio = args.downsample_ratio_audio[0]
+        if type(args.downsample_ratio_video) == list:
+            args.downsample_ratio_video = args.downsample_ratio_video[0]
 
     modelmodule = ModelModule_LLM(args)
     datamodule = DataModule_LLM(args, modelmodule.tokenizer, train_num_buckets=args.train_num_buckets)
