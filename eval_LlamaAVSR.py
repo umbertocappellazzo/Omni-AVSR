@@ -195,8 +195,8 @@ def parse_args():
 
 
 def init_logger(debug):
-    fmt = "%(message)s"
-    level = logging.INFO
+    fmt = "%(asctime)s %(message)s" if debug else "%(message)s"
+    level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(format=fmt, level=level, datefmt="%Y-%m-%d %H:%M:%S")
 
 def cli_main():

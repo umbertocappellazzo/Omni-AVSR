@@ -384,6 +384,11 @@ def parse_args():
         help="Whether to test the model after traning within the same run.",
     )
     parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Flag to use debug level for logging",
+    )
+    parser.add_argument(
         "--no-layernorm-projector",
         default=False,
         type=bool,
@@ -394,13 +399,15 @@ def parse_args():
 
 
 def init_logger(debug):
-    fmt = "%(message)s"
-    level = logging.INFO
+    fmt = "%(asctime)s %(message)s" if debug else "%(message)s"
+    level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(format=fmt, level=level, datefmt="%Y-%m-%d %H:%M:%S")
 
 
 def cli_main():
     args = parse_args()
+    init_logger(args.debug)
+    
     print(args)
     
     if args.slurm_job_id != -1:
