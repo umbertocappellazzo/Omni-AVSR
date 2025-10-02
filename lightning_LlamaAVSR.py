@@ -120,7 +120,6 @@ class ModelModule_LLM(LightningModule):
                                    num_beams = args.num_beams, 
                                    PETF_LLM_name = args.add_PETF_LLM, 
                                    peft_config_llm= lora_config_llm,
-                                   compression_mode= args.compression_mode,
                                    remove_layernorm_from_projector = args.no_layernorm_projector,
                                    is_matryoshka = args.is_matryoshka
                                    )
