@@ -10,18 +10,14 @@ import logging
 import os
 from argparse import ArgumentParser
 import torch
-import time
-from avg_checkpoints_original import ensemble_original
-from datamodule.data_module_LLM import DataModule_LLM
+from avg_checkpoints import ensemble_original
+from datamodule.data_module import DataModule_LLM
 from lightning_OmniAVSR import ModelModule_LLM
 
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.strategies import DDPStrategy#, FSDPStrategy, DeepSpeedStrategy
 from pytorch_lightning.loggers import WandbLogger
-#from transformers.models.llama.modeling_llama import LlamaDecoderLayer
-import time
-import datetime
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -53,10 +49,10 @@ def get_trainer(args):
         strategy= DDPStrategy(find_unused_parameters= find_unused_parameters_flag),  #FSDPStrategy(auto_wrap_policy=policy), #"deepspeed_stage_3" #fsdp" DDPStrategy(find_unused_parameters=False) DeepSpeedStrategy(logging_batch_size_per_gpu=4, stage=3, offload_optimizer=True, offload_parameters=True)
         callbacks=callbacks,
         reload_dataloaders_every_n_epochs=1,
-        logger=WandbLogger(name=args.exp_name, project="AV_ASR_LLM", entity= "av_asr_llm"),
+        logger=WandbLogger(name=args.exp_name, project=args.wandb_project),
         gradient_clip_val=10.0,
         val_check_interval=args.val_check_interval,
-        #accumulate_grad_batches=6
+        #accumulate_grad_batches=
     )
 
 
@@ -66,7 +62,7 @@ def get_test_trainer(args):
         num_nodes=1,
         devices=1,
         accelerator="gpu",
-        logger=WandbLogger(name=args.exp_name, project="AV_ASR_LLM", entity= "av_asr_llm"),
+        logger=WandbLogger(name=args.exp_name, project=args.wandb_project),
     )
 
 def get_lightning_module(args):
@@ -86,26 +82,32 @@ def parse_args():
     )
     parser.add_argument(
         "--root-dir",
-        default="/ucappell/datasets", #   "/cappellazzo/avsr_llm/LRS3"   "/cappellazzo/AV_ASR/preprocessed_dataset"
+        default=None,
         type=str,
-        help="Root directory of preprocessed dataset",
+        help="Root directory of preprocessed dataset.",
+    )
+    parser.add_argument(
+        "--wandb-project",
+        default= None, 
+        type=str,
+        help="wandb project name where to track the experiment metrics.",
     )
     parser.add_argument(
         "--seed",
-        default=42,
+        default=7,
         type=int,
     )
     parser.add_argument(
         "--exp-name",
         default= "", 
         type=str,
-        help="Experiment name",
+        help="Experiment name.",
     )
     parser.add_argument(
         "--modality",
         default="audio",
         type=str,
-        help="Type of input modality",
+        help="Type of input modality.",
         choices=["audio", "video", "audiovisual", "audiovisual_avhubert"],
     )
     
@@ -114,25 +116,20 @@ def parse_args():
         default= None,
         type= str,
         help= "How we compress the tokens.",
-        choices= ["avg-pooling","stack", "resampler"]
+        choices= ["avg-pooling","stack"]
     )
-    
-
     parser.add_argument(
         "--llm-model",
         default= None,
         type=str,
-        help="LLM model name",
-        choices= ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", "meta-llama/Llama-2-7b-hf", 
-                  "google/gemma-2b","google/gemma-2b", "google/gemma-2-9b",
-                  "mistralai/Mistral-7B-v0.1", 
+        help="LLM model name.",
+        choices= ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", "meta-llama/Llama-2-7b-hf",
                   "meta-llama/Meta-Llama-3-8B", "meta-llama/Meta-Llama-3.1-8B", "meta-llama/Llama-3.2-1B","meta-llama/Llama-3.2-3B",
-                  "Qwen/Qwen2-1.5B", "Qwen/Qwen2-7B",
                   "Qwen/Qwen2.5-0.5B", "Qwen/Qwen2.5-1.5B", "Qwen/Qwen2.5-3B", "Qwen/Qwen2.5-7B", "Qwen/Qwen2.5-14B", "Qwen/Qwen2.5-32B"]
     )
     parser.add_argument(
         "--hidden-size",
-        default= 3072, #2048 3072 3584 4096 5120      Qwen2-1.5B: 1536. Qwen2-7B: 3584.
+        default= None, #2048 3072 3584 4096 5120
         type=int,
         help="Hidden size of the LLM.",
     )
@@ -144,53 +141,51 @@ def parse_args():
     )
     parser.add_argument(
         "--prompt-audio",
-        default= "Transcribe speech to text.", #"Given the audio tokens, generate the corresponding text."
+        default= "Transcribe speech to text.",
         type=str,
-        help="The prompt for the LLM.",
+        help="The audio prompt for the LLM.",
     )
     parser.add_argument(
         "--prompt-video",
-        default= "Transcribe video to text.", #"Given the audio tokens, generate the corresponding text."
+        default= "Transcribe video to text.",
         type=str,
-        help="The prompt for the LLM.",
+        help="The visual prompt for the LLM.",
     )
     parser.add_argument(
         "--prompt-audiovisual",
-        default= "Transcribe speech and video to text.", #"Given the audio tokens, generate the corresponding text."
+        default= "Transcribe speech and video to text.",
         type=str,
-        help="The prompt for the LLM.",
+        help="The audio-visual prompt for the LLM.",
     )
     parser.add_argument(
         "--pretrain-avhubert-enc-video-path",
-        default= None,   # "/cappellazzo/avsr_llm/src/ckpt_pretrained/large_vox_iter5.pt",  "/cappellazzo/AV_ASR/autoavsr_v1.1/results/large_vox_iter5.pt", 
-                                                                                #/cappellazzo/AV_ASR/autoavsr_v1.1/results/asr_trlibrispeech_base.pth", #asr_trlrs3vox2_base.pth vsr_trlrs2lrs3vox2avsp_base.pth raven_vox2lrs3_large_video.pth
-        type=str,                                                               # vsr_prelrs3vox2avs_large_ftlrs3vox2avs_selftrain_braven.pth
+        default= None,
+        type=str,
     )
-    
     parser.add_argument(
         "--use-lora-avhubert",
         default = False,
         type = bool,
         help= "Whether to apply LoRA to the transformer module of AV-HuBERT."
-        )
+    )
     parser.add_argument(
         "--audio-encoder-name",
-        default = None, # "openai/whisper-medium.en/small.en/base.en/tiny.en/large",   "microsoft/wavlm-large", "av-hubert"
+        default = None, # "openai/whisper-medium.en/small.en/base.en/tiny.en/large",   "microsoft/wavlm-large"
         type = str
-        )
+    )
     parser.add_argument(
         "--unfrozen-modules",
         nargs="*",
         default= [None], #  "peft_llm","lora_avhubert"
         help="Which modules to train.",
-        choices = [None, "embedding", "peft_llm","peft_vision", "lora_avhubert", "raven"]
+        choices = [None, "peft_llm", "lora_avhubert"]
     )
     parser.add_argument(
         "--add-PETF-LLM",
         default= None,
         type= str,
         help="Whether to add a PEFT module to the LLM.",
-        choices= [None, "adapter", "lora","lora_peft"]
+        choices= [None, "lora"]
     )
     parser.add_argument(
         "--rank",
@@ -204,14 +199,6 @@ def parse_args():
         type=int,
         help="Alpha for LoRA."
     )
-    
-    parser.add_argument(
-        "--reduction-rate-adapter",
-        default= 32,
-        type=int,
-        help="The reduction rate of the LLM PETF moduke. Set to None if add_PETF_LLM is False."
-    )
-    
     parser.add_argument(
         "--is-task-specific",
         default= False,
@@ -231,6 +218,7 @@ def parse_args():
         "--is-single-matry-projector",
         default= False,
         type= bool,
+        help="Whether to use a single projector for multiple compression rates when Matryosha is used. This is set to True when Matryoshka is not used."
     )
     parser.add_argument(
         "--matry-weights",
@@ -240,62 +228,10 @@ def parse_args():
         help="Weights to apply to ASR, VSR, and AVSR tasks. If None, all weights are set to 1.",
     )
     parser.add_argument(
-        "--is-MoE",
-        default= False,
-        type= bool,
-    )
-    parser.add_argument(
-        "--n-experts",
-        default= 4,
-        type= int,
-        help = "The number of routed experts in MoE."
-    )
-    parser.add_argument(
-        "--topk",
-        default= 2,
-        type= int,
-        help= "The number of activated routed experts in MoE."
-    )
-    parser.add_argument(
-        "--adapter-location",
-        default = "FFN",
-        choices = ["MHSA", "FFN", "LAYER"],
-        type= str,
-    )
-    parser.add_argument(
-        "--num-shared-experts",
-        default = 1,
-        type= int,
-        help= "Number of shared experts. Default: 1."
-    )
-    parser.add_argument(
-        "--apply-load-balancing-loss",
-        default= False,
-        type= bool,
-        help= "Whether to apply the load balancing loss to the top-k router."
-    )
-    parser.add_argument(
-        "--load-balancing-loss-coeff",
-        default= 0.01,
-        type= float,
-    )
-    parser.add_argument(
-        "--is-hydra",
-        default= False,
-        type= bool,
-        help= "Whether to use HydraLoRA."
-    )
-    parser.add_argument(
-        "--is-last-layer-task-specific",
-        default= False,
-        type= bool,
-    )
-    
-    parser.add_argument(
         "--train-file",
-        default="lrs3_train_transcript_lengths_seg16s_LLM_lowercase_greater25.csv", #"lrs3_30h_train_transcript_lengths_seg16s_LLM_lowercase_greater12.csv"  "lrs3_train_transcript_lengths_seg16s_LLM_lowercase_greater25.csv"
+        default="lrs3_train_transcript_lengths_seg16s_LLM_lowercase_greater25.csv",
         type=str,
-        help="Filename of training label list",
+        help="Filename of training label list.",
     )
     parser.add_argument(
         "--val-file",
@@ -313,26 +249,25 @@ def parse_args():
         "--num-nodes",
         default=1,
         type=int,
-        help="Number of machines used. (Default: 4)",
+        help="Number of machines used.",
     )
     parser.add_argument(
         "--gpus",
-        #nargs="*",
-        default=1,  #[1,2,3,4,5]
+        default=1,
         type=int,
-        help="Number of gpus in each machine. (Default: 8)",
+        help="Number of gpus in each machine.",
     )
     parser.add_argument(
         "--pretrained-model-path",
         default= None,
         type=str,
-        help="Path to the pre-trained model",
+        help="Path to the pre-trained model.",
     )
     parser.add_argument(
         "--warmup-epochs",
         type=int,
         default=0,
-        help="Number of epochs for warmup. (Default: 5)",
+        help="Number of epochs for warmup.",
     )
     parser.add_argument(
         "--max-epochs",
@@ -341,12 +276,12 @@ def parse_args():
     )
     parser.add_argument(
         "--num-average-epochs",
-        default=4,
+        default=1,
         type=int,
     )
     parser.add_argument(
         "--num-check-save",
-        default=4,
+        default=1,
         type=int,
     )
     parser.add_argument(
@@ -356,64 +291,62 @@ def parse_args():
     parser.add_argument(
         "--downsample-ratio-audio",
         nargs="*",
-        default=3,  #[1,2,3,4,5]
+        default=3,
         type=int,
-        help="Downsample ratio.",
+        help="Downsample ratio for audio.",
     )
     parser.add_argument(
         "--downsample-ratio-video",
         nargs="*",
-        default=3,  #[1,2,3,4,5]
+        default=3,
         type=int,
-        help="Downsample ratio.",
+        help="Downsample ratio for video.",
     )
     parser.add_argument(
         "--downsample-ratio-test-matry-audio",
         default=None,
         type=int,
-        help="Downsample ratio.",
     )
     parser.add_argument(
         "--downsample-ratio-test-matry-video",
         default=None,
         type=int,
-        help="Downsample ratio.",
     )
     parser.add_argument(
         "--max-frames-audio",
         type=int,
         default=1000,
-        help="Maximal number of frames in a batch. (Default: 1600)",
+        help="Maximal number of audio frames in a batch. This must be specificied when the ASR task is considered.",
     )
     parser.add_argument(
         "--max-frames-video",
         type=int,
         default=1500,
-        help="Maximal number of frames in a batch. (Default: 1600)",
+        help="Maximal number of video frames in a batch. This must be specificied when the VSR task is considered.",
     )
     parser.add_argument(
         "--max-frames-audiovisual",
         type=int,
         default=1000,
-        help="Maximal number of frames in a batch. (Default: 1600)",
+        help="Maximal number of audiovisual frames in a batch. This must be specificied when the AVSR task is considered.",
     )
     parser.add_argument(
         "--lr",
         type=float,
         default=1e-3,   # 1e-3 for ASR and AVSR, 5e-4 for VSR.
-        help="Learning rate. (Default: 1e-3)",
+        help="Learning rate.",
     )
     parser.add_argument(
         "--weight-decay",
         type=float,
         default=0.1,
-        help="Weight decay",
+        help="Weight decay.",
     )
     parser.add_argument(
         "--train-num-buckets",
         type=int,
         default=400,
-        help="Bucket size for the training set",
+        help="Bucket size for the training set.",
     )
     parser.add_argument(
         "--ckpt-path",
@@ -425,13 +358,13 @@ def parse_args():
         "--max-dec-tokens",
         default= 32,
         type=int,
-        help="Maximum number of tokens to generate",
+        help="Maximum number of tokens to generate.",
     )
     parser.add_argument(
         "--num-beams",
         default=15,
         type=int,
-        help="Beams used for beam search",
+        help="Beams used for beam search.",
     )
     parser.add_argument(
         "--slurm-job-id",
@@ -444,37 +377,25 @@ def parse_args():
         type=float,
         default= 999999,  
         help="Level of signal-to-noise ratio (SNR)",
-        choices= [999999,-5]
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Flag to use debug level for logging",
     )
     parser.add_argument(
         "--auto-test",
         default= True,
-        help="Flag to use debug level for logging",
+        help="Whether to test the model after traning within the same run.",
     )
     parser.add_argument(
         "--no-layernorm-projector",
         default=False,
         type=bool,
-        help="Removes LayerNorm from the audio and video projectors",
-    )
-    parser.add_argument(
-        "--test-for-expert-analysys",
-        default=False,
-        type=bool,
-        help="Removes LayerNorm from the audio and video projectors",
+        help="Removes LayerNorm from the audio and video projectors.",
     )
     
     return parser.parse_args()
 
 
 def init_logger(debug):
-    fmt = "%(asctime)s %(message)s" if debug else "%(message)s"
-    level = logging.DEBUG if debug else logging.INFO
+    fmt = "%(message)s"
+    level = logging.INFO
     logging.basicConfig(format=fmt, level=level, datefmt="%Y-%m-%d %H:%M:%S")
 
 
@@ -500,13 +421,10 @@ def cli_main():
     if args.auto_test:
         
         args.pretrained_model_path = ensemble_original(args, args.num_average_epochs)
-        #time.sleep(10)
         torch.distributed.destroy_process_group()
         if trainer.is_global_zero:
             trainer = get_test_trainer(args)
-            #ckpt = torch.load(args.pretrained_model_path, map_location=lambda storage, loc: storage)
-            #modelmodule.model.load_state_dict(ckpt)
-            
+        
             if args.is_matryoshka:
                 print("Evaluating on the ASR task!")
                 args.modality = "audio"
@@ -536,17 +454,13 @@ def cli_main():
                         trainer.test(model=modelmodule, datamodule=datamodule)
                 
             else:
-            
+                # Llama-MT.
                 print("Evaluating on the ASR task!")
                 args.modality = "audio"
                 
                 print("First evaluation round!")
                 trainer.test(model=modelmodule, datamodule=datamodule)
-                #print("Second evaluation round!")
-                #trainer.test(model=modelmodule, datamodule=datamodule)
-                #print("Third evaluation round!")
-                #trainer.test(model=modelmodule, datamodule=datamodule)
-                
+            
                 print("Evaluating on the VSR task!")
                 args.modality = "video"
                 
@@ -562,12 +476,6 @@ def cli_main():
                 
                 print("First evaluation round!")
                 trainer.test(model=modelmodule, datamodule=datamodule)
-                #print("Second evaluation round!")
-                #trainer.test(model=modelmodule, datamodule=datamodule)
-                #print("Third evaluation round!")
-                #trainer.test(model=modelmodule, datamodule=datamodule)
-                    
-
 
 if __name__ == "__main__":
     cli_main()

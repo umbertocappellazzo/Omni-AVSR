@@ -1,43 +1,81 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jun 30 15:42:51 2025
+
+@author: umbertocappellazzo
+"""
+
 import os
 
 import torch
 from pytorch_lightning import LightningDataModule
 
-from .av_dataset import AVDataset
+from .av_dataset import AVDataset_LLM
 from .transforms import AudioTransform, VideoTransform
 
+IGNORE_INDEX = -100
 
-def pad(samples, pad_val=0.0):
-    lengths = [len(s) for s in samples]
-    max_size = max(lengths)
-    sample_shape = list(samples[0].shape[1:])
-    collated_batch = samples[0].new_zeros([len(samples), max_size] + sample_shape)
-    for i, sample in enumerate(samples):
-        diff = len(sample) - max_size
-        if diff == 0:
-            collated_batch[i] = sample
-        else:
-            collated_batch[i] = torch.cat(
-                [sample, sample.new_full([-diff] + sample_shape, pad_val)]
-            )
-    if len(samples[0].shape) == 1:
-        collated_batch = collated_batch.unsqueeze(1)  # targets
-    elif len(samples[0].shape) == 2:
-        pass  # collated_batch: [B, T, 1]
-    elif len(samples[0].shape) == 4:
-        pass  # collated_batch: [B, T, C, H, W]
-    return collated_batch, lengths
+def collate_LLM(batch, tokenizer, modality, is_trainval= True):
 
-
-def collate_pad(batch):
+    pad_id = tokenizer.convert_tokens_to_ids('<pad>')
+    
     batch_out = {}
-    for data_type in batch[0].keys():
-        pad_val = -1 if data_type == "target" else 0.0
-        c_batch, sample_lengths = pad(
-            [s[data_type] for s in batch if s[data_type] is not None], pad_val
-        )
-        batch_out[data_type + "s"] = c_batch
-        batch_out[data_type + "_lengths"] = torch.tensor(sample_lengths)
+    lengths = []
+    # If we are in train/val mode, we use the entire text sequence. If we are in test mode, we only have the sos token. 
+    
+    if is_trainval:
+        tokens = []
+    if modality == "audio" or modality == "audiovisual" or modality == "audiovisual_avhubert":
+        audios = [] if is_trainval else batch["audio"]
+    if modality == "video" or modality == "audiovisual" or modality == "audiovisual_avhubert":
+        videos = [] if is_trainval else batch["video"]
+    
+    if is_trainval:
+        for i in range(len(batch)):
+            tokens.append(batch[i]["tokens"])
+            if modality == "audio" or modality == "audiovisual" or modality == "audiovisual_avhubert":
+                audios.append(batch[i]["audio"])
+                lengths.append(len(batch[i]["audio"]))
+            if modality == "video" or modality == "audiovisual" or modality == "audiovisual_avhubert":
+                videos.append(batch[i]["video"])
+    else:
+        if modality == "audio" or modality == "audiovisual" or modality == "audiovisual_avhubert":
+            lengths.append(len(batch["audio"]))
+    
+    if tokenizer.name_or_path in ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", "meta-llama/Llama-2-7b-hf", "mistralai/Mistral-7B-v0.1"]:
+        tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<s>"]]).unsqueeze(0)
+    elif tokenizer.name_or_path in ["google/gemma-2b","google/gemma-7b", "google/gemma-2-9b"]:
+        tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<bos>"]]).unsqueeze(0)
+    elif "Qwen" in tokenizer.name_or_path:
+        tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([[]], dtype=torch.long)
+    else:
+        assert tokenizer.name_or_path == "meta-llama/Meta-Llama-3-8B" or tokenizer.name_or_path == "meta-llama/Meta-Llama-3.1-8B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-1B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-3B"
+        tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<|begin_of_text|>"]]).unsqueeze(0)
+    
+    if is_trainval: # We need to set to -100 the padding tokens for the loss computation.
+        labels = []
+        for label in tokens:
+            labels.append(torch.tensor([el if el != pad_id else IGNORE_INDEX for el in label], device = tokens.device))
+            
+    else: # In inference we don't have access to the text info.
+        labels = None
+        batch_out["gold_text"] = batch["tokens"]
+        
+    batch_out["tokens"] = tokens
+    
+    batch_out["labels"] = torch.stack(labels) if is_trainval else labels
+    
+    
+    if modality == "audio" or modality == "audiovisual" or modality == "audiovisual_avhubert":
+        audio_stack = torch.nn.utils.rnn.pad_sequence(audios, batch_first=True, padding_value = 0)
+        batch_out["audio"] = audio_stack if is_trainval else audio_stack.unsqueeze(0)
+        batch_out["lengths"] = torch.tensor(lengths)
+        
+    if modality == "video" or modality == "audiovisual" or modality == "audiovisual_avhubert":
+        video_stack = torch.nn.utils.rnn.pad_sequence(videos, batch_first=True, padding_value = 0)
+        batch_out["video"] = video_stack if is_trainval else video_stack.unsqueeze(0)
+    
     return batch_out
 
 
@@ -106,14 +144,15 @@ class CustomBucketDataset(torch.utils.data.Dataset):
         return len(self.batches)
 
 
-class DataModule(LightningDataModule):
+class DataModule_LLM(LightningDataModule):
     def __init__(
         self,
-        args=None,
+        args,
+        tokenizer,
         batch_size=None,
         train_num_buckets=50,
         train_shuffle=True,
-        num_workers=10,
+        num_workers=5,
     ):
         super().__init__()
         self.args = args
@@ -121,15 +160,28 @@ class DataModule(LightningDataModule):
         self.train_num_buckets = train_num_buckets
         self.train_shuffle = train_shuffle
         self.num_workers = num_workers
-
+        self.tokenizer = tokenizer
+        self.downsample_ratio = args.downsample_ratio_video
+        
     def train_dataloader(self):
-        dataset = AVDataset(
+        
+        if self.args.modality == 'audio':
+            self.args.max_frames = self.args.max_frames_audio
+        elif self.args.modality == 'video':
+            self.args.max_frames = self.args.max_frames_video
+        else:
+            self.args.max_frames = self.args.max_frames_audiovisual
+        
+        
+        dataset = AVDataset_LLM(
             root_dir=self.args.root_dir,
             label_path=os.path.join(self.args.root_dir, "labels", self.args.train_file),
             subset="train",
             modality=self.args.modality,
             audio_transform=AudioTransform("train"),
             video_transform=VideoTransform("train"),
+            downsample_ratio=self.downsample_ratio,
+            is_matryoshka = self.args.is_matryoshka
         )
         
         dataset = CustomBucketDataset(
@@ -144,18 +196,20 @@ class DataModule(LightningDataModule):
             num_workers=self.num_workers,
             batch_size=None,
             shuffle=self.train_shuffle,
-            collate_fn=collate_pad,
+            collate_fn= lambda x: collate_LLM(x, self.tokenizer, self.args.modality, is_trainval= True),
         )
         return dataloader
 
     def val_dataloader(self):
-        dataset = AVDataset(
+        dataset = AVDataset_LLM(
             root_dir=self.args.root_dir,
             label_path=os.path.join(self.args.root_dir, "labels", self.args.val_file),
             subset="val",
             modality=self.args.modality,
             audio_transform=AudioTransform("val"),
             video_transform=VideoTransform("val"),
+            downsample_ratio=self.downsample_ratio,
+            is_matryoshka = self.args.is_matryoshka
         )
         dataset = CustomBucketDataset(
             dataset, dataset.input_lengths, 1000, 1, batch_size=self.batch_size
@@ -164,20 +218,26 @@ class DataModule(LightningDataModule):
             dataset,
             batch_size=None,
             num_workers=self.num_workers,
-            collate_fn=collate_pad,
+            collate_fn= lambda x: collate_LLM(x, self.tokenizer, self.args.modality, is_trainval= True),
         )
         return dataloader
 
     def test_dataloader(self):
-        dataset = AVDataset(
+        dataset = AVDataset_LLM(
             root_dir=self.args.root_dir,
             label_path=os.path.join(self.args.root_dir, "labels", self.args.test_file),
             subset="test",
             modality=self.args.modality,
             audio_transform=AudioTransform(
-                "test", snr_target=self.args.decode_snr_target
-            ),
+                "test", snr_target=self.args.decode_snr_target,
+                ),
             video_transform=VideoTransform("test"),
+            downsample_ratio=self.downsample_ratio,
+            is_matryoshka = self.args.is_matryoshka
         )
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=None)
+        dataloader = torch.utils.data.DataLoader(
+            dataset, 
+            batch_size=None,
+            collate_fn= lambda x: collate_LLM(x, self.tokenizer, self.args.modality, is_trainval= False),
+        )
         return dataloader

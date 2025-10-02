@@ -11,8 +11,9 @@ from argparse import ArgumentParser
 
 from datamodule.data_module import DataModule_LLM
 from pytorch_lightning import Trainer
-from lightning_OmniAVSR import ModelModule_LLM
+from lightning_LlamaAVSR import ModelModule_LLM
 from pytorch_lightning.loggers import WandbLogger
+
 
 def get_trainer(args):
     return Trainer(precision='bf16-true',
@@ -48,8 +49,9 @@ def parse_args():
         default= None,
         type= str,
         help= "How we compress the tokens.",
-        choices= ["avg-pooling","stack", "resampler"]
+        choices= ["avg-pooling","stack"]
     )
+
     parser.add_argument(
         "--pretrained-model-path",                      
         default= None,
@@ -58,32 +60,11 @@ def parse_args():
     )
     parser.add_argument(
         "--root-dir",
-        default= None,
+        default=None,
         type=str,
         help="Root directory of preprocessed dataset.",
     )
-    parser.add_argument(
-        "--is-task-specific",
-        default= False,
-        type= bool,
-    )
-    parser.add_argument(
-        "--is-matryoshka",
-        default= False,
-        type= bool,
-    )
-    parser.add_argument(
-        "--is-single-matry-projector",
-        default= False,
-        type= bool,
-    )
-    parser.add_argument(
-        "--matry-weights",
-        nargs="*",
-        default=None, 
-        type=float,
-        help="Weights to apply to ASR, VSR, and AVSR tasks. If None, all weights are set to 1.",
-    )
+    
     parser.add_argument(
         "--test-file",
         default="lrs3_test_transcript_lengths_seg16s_LLM_lowercase.csv",
@@ -92,7 +73,7 @@ def parse_args():
     )
     parser.add_argument(
         "--pretrain-avhubert-enc-video-path",
-        default= None, #"/cappellazzo/AV_ASR/autoavsr_v1.1/results/large_vox_iter5.pt", "/cappellazzo/avsr_llm/src/ckpt_pretrained/large_vox_iter5.pt"
+        default= None,
         type=str,                                                               
     )
     parser.add_argument(
@@ -145,7 +126,7 @@ def parse_args():
     parser.add_argument(
         "--unfrozen-modules",
         nargs="*",
-        default= [None],
+        default= [None],  #"peft_llm","lora_avhubert"
         help="Which modules to train."
     )
     parser.add_argument(
@@ -169,29 +150,15 @@ def parse_args():
     )
     parser.add_argument(
         "--downsample-ratio-audio",
-        nargs="*",
-        default=3,  #[1,2,3,4,5]
+        default=3,
         type=int,
         help="Downsample audio ratio.",
     )
     parser.add_argument(
         "--downsample-ratio-video",
-        nargs="*",
-        default=3,  #[1,2,3,4,5]
+        default=3,
         type=int,
         help="Downsample video ratio.",
-    )
-    parser.add_argument(
-        "--downsample-ratio-test-matry-audio",
-        default=None,
-        type=int,
-        help="Downsample audio ratio for eval.",
-    )
-    parser.add_argument(
-        "--downsample-ratio-test-matry-video",
-        default=None,
-        type=int,
-        help="Downsample visual ratio for eval.",
     )
     parser.add_argument(
         "--max-dec-tokens",
@@ -221,7 +188,7 @@ def parse_args():
         "--no-layernorm-projector",
         default=False,
         type=bool,
-        help="Removes LayerNorm from the audio and video projectors.",
+        help="",
     )
     
     return parser.parse_args()
@@ -235,64 +202,25 @@ def init_logger(debug):
 def cli_main():
     args = parse_args()
     init_logger(args.debug)
-    
-    if not args.is_matryoshka:
-        if type(args.downsample_ratio_audio) == list:
-            args.downsample_ratio_audio = args.downsample_ratio_audio[0]
-        if type(args.downsample_ratio_video) == list:
-            args.downsample_ratio_video = args.downsample_ratio_video[0]
-    
+            
     modelmodule = ModelModule_LLM(args)
     datamodule = DataModule_LLM(args, modelmodule.tokenizer, train_num_buckets=args.train_num_buckets)
     trainer = get_trainer(args)
     
-    if args.is_matryoshka:
-        print("Evaluating on the ASR task!")
-        args.modality = "audio"
-        for rate_audio in args.downsample_ratio_audio:
-            args.downsample_ratio_test_matry_audio = rate_audio
-            print("First evaluation round, rate: ", rate_audio)
-            trainer.test(model=modelmodule, datamodule=datamodule)
-        
-        print("Evaluating on the VSR task!")
-        args.modality = "video"
-        for rate_video in args.downsample_ratio_video:
-            args.downsample_ratio_test_matry_video = rate_video
-            print("First evaluation round, rate: ", rate_video)
-            trainer.test(model=modelmodule, datamodule=datamodule)
-            print("Second evaluation round, rate: ", rate_video)
-            trainer.test(model=modelmodule, datamodule=datamodule)
-            print("Third evaluation round, rate: ", rate_video)
-            trainer.test(model=modelmodule, datamodule=datamodule)
-        
-        print("Evaluating on the AVSR task!")
-        args.modality = "audiovisual"
-        for rate_video in args.downsample_ratio_video:
-            args.downsample_ratio_test_matry_video = rate_video
-            for rate_audio in args.downsample_ratio_audio:
-                args.downsample_ratio_test_matry_audio = rate_audio
-                print(f"First evaluation round: audio rate {rate_audio}, video_rate {rate_video}.", rate_video)
-                trainer.test(model=modelmodule, datamodule=datamodule)
+    if args.modality == "audio":
+        print("First evaluation round, ASR!")
+        trainer.test(model=modelmodule, datamodule=datamodule)
+    elif args.modality == "video":
+        print("First evaluation round, VSR!")
+        trainer.test(model=modelmodule, datamodule=datamodule)
+        print("Second evaluation round, VSR!")
+        trainer.test(model=modelmodule, datamodule=datamodule)
+        print("Third evaluation round, VSR!")
+        trainer.test(model=modelmodule, datamodule=datamodule)
     else:
-    
-        modelmodule.args.modality = "audio"
-        
-        print("First evaluation round!")
+        print("First evaluation round, AVSR!")
         trainer.test(model=modelmodule, datamodule=datamodule)
-        
-        modelmodule.args.modality = "video"
-        
-        print("First evaluation round!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
-        print("Second evaluation round!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
-        print("Third evaluation round!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
-        
-        modelmodule.args.modality = "audiovisual"
-        
-        print("First evaluation round!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
+
 
 if __name__ == "__main__":
     cli_main()

@@ -13,20 +13,14 @@ from transformers.models.llama.modeling_llama import LlamaForCausalLM, LlamaMode
 from transformers.models.llama.configuration_llama import LlamaConfig
 from transformers.cache_utils import Cache
 from typing import Optional, Tuple
-import warnings
 import math
 from transformers.utils import logging
-
-from transformers.cache_utils import Cache, DynamicCache
+from transformers.cache_utils import DynamicCache
 from transformers.modeling_outputs import CausalLMOutputWithPast, BaseModelOutputWithPast
-from transformers.utils.doc import add_start_docstrings_to_model_forward, replace_return_docstrings
-from typing import Optional, Tuple, List, Union
-import math
+from transformers.utils.doc import add_start_docstrings_to_model_forward
+from typing import List, Union
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
-
-
-from transformers.utils import logging
 
 logger = logging.get_logger(__name__)
 
@@ -111,7 +105,6 @@ class LoRA_config:
     RANK: int
     ALPHA: int = 1
     IS_LLAMA3: bool = False
-    IS_TINYLLAMA: bool = False
     IS_LLAMA3_2_3B: bool = False
     IS_TASK_SPECIFIC: bool = False
     SHARED_LORA: bool = False
@@ -161,13 +154,6 @@ class LlamaSdpaAttention_lora(LlamaSdpaAttention):
                     })
                 if lora_config.SHARED_LORA:
                     self.lora_up_V_shared = nn.Linear(round(hid_size/self.rank), hid_size//3, bias= False)
-            elif lora_config.IS_TINYLLAMA:
-                self.lora_up_V = nn.ModuleDict({"audio": nn.Linear(round(hid_size/self.rank), hid_size//8, bias= False),
-                                                "video": nn.Linear(round(hid_size/self.rank), hid_size//8, bias= False), 
-                                                "audiovisual": nn.Linear(round(hid_size/self.rank), hid_size//8, bias= False)
-                    })
-                if lora_config.SHARED_LORA:
-                    self.lora_up_V_shared = nn.Linear(round(hid_size/self.rank), hid_size//8, bias= False)
             else:    
                 self.lora_up_V = nn.ModuleDict({"audio": nn.Linear(round(hid_size/self.rank), hid_size, bias= False),
                                                 "video": nn.Linear(round(hid_size/self.rank), hid_size, bias= False),
@@ -197,8 +183,6 @@ class LlamaSdpaAttention_lora(LlamaSdpaAttention):
                 self.lora_up_V = nn.Linear(round(hid_size/self.rank), hid_size//4, bias= False)
             elif lora_config.IS_LLAMA3_2_3B:
                 self.lora_up_V = nn.Linear(round(hid_size/self.rank), hid_size//3, bias= False)
-            elif lora_config.IS_TINYLLAMA:
-                self.lora_up_V = nn.Linear(round(hid_size/self.rank), hid_size//8, bias= False)
             else:    
                 self.lora_up_V = nn.Linear(round(hid_size/self.rank), hid_size, bias= False)
     
@@ -207,6 +191,7 @@ class LlamaSdpaAttention_lora(LlamaSdpaAttention):
             nn.init.zeros_(self.lora_down_V.weight)
             nn.init.kaiming_uniform_(self.lora_up_V.weight, a=math.sqrt(5))
         
+        # If we want to use LoRA for the K and O matrices.
         
         #self.lora_down_K = nn.Linear(hid_size, round(hid_size/self.rank), bias= False)
         #self.lora_up_K = nn.Linear(round(hid_size/self.rank), hid_size, bias= False)

@@ -1,9 +1,3 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Copyright 2023 Imperial College London (Pingchuan Ma)
-# Apache 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
-
 import os
 import random
 

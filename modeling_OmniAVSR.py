@@ -8,36 +8,9 @@ Created on Thu Jul 17 15:14:59 2025
 
 import torch
 from torch import nn
-#import torch.nn.functional as F
-#import numpy as np
-
-#from espnet.nets.pytorch_backend.frontend.resnet import video_resnet
-#from espnet.nets.pytorch_backend.frontend.resnet1d import audio_resnet
-#from espnet.nets.pytorch_backend.encoder.conformer_encoder import ConformerEncoder
-from Llama_adapters import LlamaForCausalLM_adapter 
 from Llama_LoRA import LlamaForCausalLM_lora
-from Llama_HydraLoRA import LlamaForCausalLM_HydraLora
-from Llama_LoRA_lastlayer import LlamaForCausalLM_lora_lastlayer
-#from Llama_MatryLoRA import LlamaForCausalLM_MatryLoRA
-#from Llama_MatryAdapter import LlamaForCausalLM_MatryAdapter
-#from Llama_MatryMoEAdapter import LlamaForCausalLM_MatryMoEAdapter
-from Llama_MoEAdapter import LlamaForCausalLM_MoEAdapter
-from Llama_MoELoRA import LlamaForCausalLM_MoELoRA
-#from Llama_MatryMoELoRA import LlamaForCausalLM_MatryMoELoRA
-#from Mistral_LoRA import MistralForCausalLM_lora
 from Qwen_LoRA import Qwen2ForCausalLM_lora
-#from espnet.nets.pytorch_backend.encoder.whisper_encoder import OpenAIWhisperEncoder
-#from espnet.nets.pytorch_backend.frontend.whisper import WhisperFrontend
-#from espnet.raven.nets.pytorch_backend.transformer.encoder import Encoder
-from transformers import WhisperModel, LlamaForCausalLM, AutoFeatureExtractor, WavLMModel
-
-#from transformers import BitsAndBytesConfig
-#from dataclasses import dataclass
-#from peft import get_peft_model
-#from Attention import Attention
-#from Llama_MatryMoELoRA import Top_K_MoELoRA
-#from sklearn.metrics.pairwise import cosine_similarity
-
+from transformers import WhisperModel, LlamaForCausalLM, AutoFeatureExtractor
 import fairseq
 from av_hubert.avhubert.hubert_asr import AVHubertSeq2Seq, AVHubertSeq2SeqConfig
 from av_hubert.avhubert.hubert_lora import AVHubertModel_lora
@@ -50,64 +23,18 @@ import random
 
 IGNORE_INDEX = -100
 
-
-
-def load_balancing_loss_func(gate_logits, num_experts, top_k):
-    r"""
-    Computes auxiliary load balancing loss as in Switch Transformer - implemented in Pytorch.
-
-    See Switch Transformer (https://arxiv.org/abs/2101.03961) for more details. This function implements the loss
-    function presented in equations (4) - (6) of the paper. It aims at penalizing cases where the routing between
-    experts is too unbalanced.
-
-    Args:
-        gate_logits:
-            Logits from the `gate`, should be a tuple of model.config.num_hidden_layers tensors of
-            shape [batch_size X sequence_length, num_experts].
-        num_experts:
-            Number of experts
-        top_k:
-            The number of experts to route per-token, can be also interpreted as the `top-k` routing
-            parameter.
-        attention_mask (`torch.Tensor`, *optional*):
-            The attention_mask used in forward function
-            shape [batch_size X sequence_length] if not None.
-
-    Returns:
-        The auxiliary loss.
-    """
-    if isinstance(gate_logits, tuple):
-        gate_logits = torch.cat([layer_gate for layer_gate in gate_logits], dim=0)
-    
-    routing_weights = torch.nn.functional.softmax(gate_logits, dim=-1)
-
-    _, selected_experts = torch.topk(routing_weights, top_k, dim=-1)
-
-    expert_mask = torch.nn.functional.one_hot(selected_experts, num_experts)
-
-    # Compute the percentage of tokens routed to each experts
-    tokens_per_expert = torch.mean(expert_mask.float(), dim=0)
-
-    # Compute the average probability of routing to these experts
-    router_prob_per_expert = torch.mean(routing_weights, dim=0)
-
-    overall_loss = torch.sum(tokens_per_expert * router_prob_per_expert.unsqueeze(0))
-    return overall_loss * num_experts
-
 class AVSR_LLMs(nn.Module):
-    def __init__(self, modality, is_MoE, pretrain_avhubert_enc_video, use_lora_avhubert, llm_model, hidden_size, 
+    def __init__(self, modality, pretrain_avhubert_enc_video, use_lora_avhubert, llm_model, hidden_size, 
                  intermediate_size, tokenizer, prompt_audio, prompt_video, prompt_audiovisual, pad_id, 
-                 downsample_ratio_audio, downsample_ratio_video, audio_encoder_name, 
+                 downsample_ratio_audio, downsample_ratio_video, audio_encoder_name, compression_mode,
                  unfrozen_modules, max_dec_tokens, num_beams, PETF_LLM_name = None, peft_config_llm = None, 
-                 compression_mode = "stack", remove_layernorm_from_projector = False, matry_weights = None,
-                 is_task_specific = None, is_hydra = False, is_last_layer_task_specific = False,
-                 is_matryoshka = False, is_single_matry_projector = False
+                 remove_layernorm_from_projector = False, matry_weights = None,
+                 is_task_specific = None, is_matryoshka = False,
                  ):
         
         super().__init__()
         
         self.modality = modality
-        self.is_MoE = is_MoE
         self.pretrain_avhubert_enc_video = pretrain_avhubert_enc_video
         self.max_dec_tokens = max_dec_tokens
         self.num_beams = num_beams
@@ -122,30 +49,16 @@ class AVSR_LLMs(nn.Module):
         self.remove_layernorm_from_projector = remove_layernorm_from_projector
         self.matry_weights = matry_weights
         self.is_task_specific = is_task_specific
-        self.is_hydra = is_hydra
-        self.is_last_layer_task_specific = is_last_layer_task_specific
         self.is_matryoshka = is_matryoshka
-        self.is_single_matry_projector = is_single_matry_projector
-        
             
         if modality == "audio" or modality == "audiovisual":
-           
-            if "whisper" in self.audio_encoder_name:
                 
-                print("Instantiating whisper!")    
-                self.audio_encoder = WhisperModel.from_pretrained(self.audio_encoder_name).encoder
-                self.audio_frontend = AutoFeatureExtractor.from_pretrained(self.audio_encoder_name)
-                self.audio_encoder.requires_grad_(False)
-                self.audio_encoder.train() # This must be explicitly done as by default the from_pretrained HF models are in eval mode when initialized (this is the opposite for pytorch!)--> cause a break in deepspeed 3! https://github.com/Lightning-AI/pytorch-lightning/issues/19467
-                audio_dim =self.audio_encoder.config.hidden_size
-                
-            else: # WavLM.
-                print("Instantiating WavLM!")    
-                assert "wavlm" in self.audio_encoder_name, ("Only whisper and WavLM audio encoders are supported as of now!")
-                self.audio_encoder = WavLMModel.from_pretrained(self.audio_encoder_name)
-                self.audio_encoder.requires_grad_(False)
-                audio_dim =self.audio_encoder.config.hidden_size
-                
+            print("Instantiating whisper!")    
+            self.audio_encoder = WhisperModel.from_pretrained(self.audio_encoder_name).encoder
+            self.audio_frontend = AutoFeatureExtractor.from_pretrained(self.audio_encoder_name)
+            self.audio_encoder.requires_grad_(False)
+            self.audio_encoder.train() # This must be explicitly done as by default the from_pretrained HF models are in eval mode when initialized (this is the opposite for pytorch!)--> cause a break in deepspeed 3! https://github.com/Lightning-AI/pytorch-lightning/issues/19467
+            audio_dim =self.audio_encoder.config.hidden_size
             
             if self.compression_mode == "stack":
                 
@@ -280,24 +193,12 @@ class AVSR_LLMs(nn.Module):
                     else:
                         self.video_proj = nn.Sequential(nn.Linear(video_dim, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
         
-        if "llama" in llm_model or "Tiny" in llm_model:
+        if "llama" in llm_model:
             if self.PETF_LLM_name is None:
                 self.llm = LlamaForCausalLM.from_pretrained(llm_model)
-            elif self.PETF_LLM_name == "adapter":
-                if self.is_MoE:
-                    self.llm = LlamaForCausalLM_MoEAdapter.from_pretrained(llm_model, peft_config_llm)
-                else:
-                    self.llm = LlamaForCausalLM_adapter.from_pretrained(llm_model, peft_config_llm)
-            elif self.PETF_LLM_name == "lora":
-                if self.is_hydra:
-                    self.llm = LlamaForCausalLM_HydraLora.from_pretrained(llm_model, peft_config_llm)
-                elif self.is_last_layer_task_specific:
-                    self.llm = LlamaForCausalLM_lora_lastlayer.from_pretrained(llm_model, peft_config_llm)
-                elif self.is_MoE:
-                    print("Instantiating MoELoRA!")
-                    self.llm = LlamaForCausalLM_MoELoRA.from_pretrained(llm_model, peft_config_llm)
-                else:
-                    self.llm = LlamaForCausalLM_lora.from_pretrained(llm_model, peft_config_llm) 
+            else:
+                assert self.PETF_LLM_name == "lora"
+                self.llm = LlamaForCausalLM_lora.from_pretrained(llm_model, peft_config_llm) 
                
         elif "Qwen" in llm_model:
             if self.PETF_LLM_name == "lora":
@@ -305,12 +206,12 @@ class AVSR_LLMs(nn.Module):
         
         # IMPORTANT: we need to add the pad_id to the model and resize the token embeddings matrix accordingly.
         self.tokenizer = tokenizer
-        if "llama" in llm_model or "Tiny" in llm_model or "mistral" in llm_model:
+        if "llama" in llm_model:
             self.llm.config.pad_token_id = pad_id
         
         self.llm.resize_token_embeddings(len(self.tokenizer))
-        if self.PETF_LLM_name != "lora_peft":
-            self.llm.requires_grad_(False)
+        
+        self.llm.requires_grad_(False)
         
         prompt_tokens_start_at = 0 if "Qwen" in self.llm_model else 1
         self.register_buffer("prompt_audio", self.llm.model.embed_tokens(self.tokenizer(prompt_audio, return_tensors = "pt").input_ids[:,prompt_tokens_start_at:-1]))
@@ -335,33 +236,22 @@ class AVSR_LLMs(nn.Module):
         if None in unfrozen_modules:
             return
         if "peft_llm" in unfrozen_modules:
-            if self.PETF_LLM_name == "adapter":
-                for block_idx in range(self.llm.config.num_hidden_layers):
-                    self.llm.model.layers[block_idx].adapter.requires_grad_(True)
-            
-            elif self.PETF_LLM_name == "lora":
-                print("Unfreezing LoRA for LLM:")
-                for block_idx in range(self.llm.config.num_hidden_layers):
-                    if self.is_MoE:
-                        self.llm.model.layers[block_idx].self_attn.MoE_LoRA_Q.requires_grad_(True)
-                        self.llm.model.layers[block_idx].self_attn.MoE_LoRA_V.requires_grad_(True)
-                    else:
-                        self.llm.model.layers[block_idx].self_attn.lora_down_Q.requires_grad_(True)
-                        self.llm.model.layers[block_idx].self_attn.lora_up_Q.requires_grad_(True)
-                        self.llm.model.layers[block_idx].self_attn.lora_down_V.requires_grad_(True)
-                        self.llm.model.layers[block_idx].self_attn.lora_up_V.requires_grad_(True)
-                        
-                        if self.peft_config_llm.SHARED_LORA:
-                            self.llm.model.layers[block_idx].self_attn.lora_down_Q_shared.requires_grad_(True)
-                            self.llm.model.layers[block_idx].self_attn.lora_up_Q_shared.requires_grad_(True)
-                            self.llm.model.layers[block_idx].self_attn.lora_down_V_shared.requires_grad_(True)
-                            self.llm.model.layers[block_idx].self_attn.lora_up_V_shared.requires_grad_(True)
+            print("Unfreezing LoRA for LLM:")
+            for block_idx in range(self.llm.config.num_hidden_layers):
+                self.llm.model.layers[block_idx].self_attn.lora_down_Q.requires_grad_(True)
+                self.llm.model.layers[block_idx].self_attn.lora_up_Q.requires_grad_(True)
+                self.llm.model.layers[block_idx].self_attn.lora_down_V.requires_grad_(True)
+                self.llm.model.layers[block_idx].self_attn.lora_up_V.requires_grad_(True)
+                
+                if self.peft_config_llm.SHARED_LORA:
+                    self.llm.model.layers[block_idx].self_attn.lora_down_Q_shared.requires_grad_(True)
+                    self.llm.model.layers[block_idx].self_attn.lora_up_Q_shared.requires_grad_(True)
+                    self.llm.model.layers[block_idx].self_attn.lora_down_V_shared.requires_grad_(True)
+                    self.llm.model.layers[block_idx].self_attn.lora_up_V_shared.requires_grad_(True)
         
         if "lora_avhubert" in unfrozen_modules:
             print("Unfreezing LoRA for AV-HuBERT video encoder!")
-            
             for block_idx in range(24):
-                # If we don't use the correct config parameters --> my initial implementation.
                 self.video_encoder.encoder.layers[block_idx].self_attn.lora_down_Q.requires_grad_(True)
                 self.video_encoder.encoder.layers[block_idx].self_attn.lora_up_Q.requires_grad_(True)
                 self.video_encoder.encoder.layers[block_idx].self_attn.lora_down_V.requires_grad_(True)
@@ -373,128 +263,47 @@ class AVSR_LLMs(nn.Module):
         if is_trainval:
             output_dict = self.prepare_inputs(inputs, is_trainval, test_ratio_matry_audio = test_ratio_matry_audio, test_ratio_matry_video = test_ratio_matry_video)
             
-            #matryoshka_loss = 0.
-            if self.is_MoE:
-                if self.peft_config_llm.APPLY_LOAD_BAL_LOSS:
-                    if self.PETF_LLM_name == "lora":
-                        load_balancing_loss_Q = 0.
-                        load_balancing_loss_V = 0.
-                    else:
-                        load_balancing_loss = 0.
-                
-                if self.is_task_specific:
-                    if "Qwen" in self.llm_model:
-                        audio_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_audio"], output_router_logits = True, modality = "audio")
-                        video_output = self.llm(inputs_embeds = torch.cat([output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_video"], output_router_logits = True, modality = "video")
-                        audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_audiovisual"], output_router_logits = True, modality = "audiovisual")
-                    else:
-                        audio_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_audio"], output_router_logits = True, modality = "audio")
-                        video_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_video"], output_router_logits = True, modality = "video")
-                        audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_audiovisual"], output_router_logits = True, modality = "audiovisual")
-                else:
-                    if "Qwen" in self.llm_model:
-                        audio_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_audio"], output_router_logits = True)
-                        video_output = self.llm(inputs_embeds = torch.cat([output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_video"], output_router_logits = True)
-                        audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_audiovisual"], output_router_logits = True)
-                    else:
-                        audio_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_audio"], output_router_logits = True)
-                        video_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_video"], output_router_logits = True)
-                        audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_audiovisual"], output_router_logits = True)
+            if self.is_task_specific:
+                if "Qwen" in self.llm_model:
+                    audio_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
+                                            labels = output_dict["labels_audio"], modality = "audio")
+                    video_output = self.llm(inputs_embeds = torch.cat([output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
+                                            labels = output_dict["labels_video"], modality = "video")
+                    audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
+                                            labels = output_dict["labels_audiovisual"], modality = "audiovisual")
                     
-                
-                audio_loss = audio_output.loss*self.matry_weights[0] if self.matry_weights else audio_output.loss
-                video_loss = video_output.loss*self.matry_weights[1] if self.matry_weights else video_output.loss
-                audiovisual_loss = audiovisual_output.loss*self.matry_weights[2] if self.matry_weights else audiovisual_output.loss
-                
-                
-                if self.peft_config_llm.APPLY_LOAD_BAL_LOSS:
-                    if self.PETF_LLM_name == "lora":
-                        load_balancing_loss_Q += load_balancing_loss_func(audio_output.router_logits[0], self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-                        load_balancing_loss_Q += load_balancing_loss_func(video_output.router_logits[0], self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-                        load_balancing_loss_Q += load_balancing_loss_func(audiovisual_output.router_logits[0], self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-                        
-                        load_balancing_loss_V += load_balancing_loss_func(audio_output.router_logits[1], self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-                        load_balancing_loss_V += load_balancing_loss_func(video_output.router_logits[1], self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-                        load_balancing_loss_V += load_balancing_loss_func(audiovisual_output.router_logits[1], self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-                    else:
-                        load_balancing_loss += load_balancing_loss_func(audio_output.router_logits, self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-                        load_balancing_loss += load_balancing_loss_func(video_output.router_logits, self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-                        load_balancing_loss += load_balancing_loss_func(audiovisual_output.router_logits, self.peft_config_llm.N_EXPERTS, self.peft_config_llm.TOP_K)
-            else:
-                if self.is_task_specific:
-                    if "Qwen" in self.llm_model:
-                        audio_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_audio"], modality = "audio")
-                        video_output = self.llm(inputs_embeds = torch.cat([output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_video"], modality = "video")
-                        audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_audiovisual"], modality = "audiovisual")
-                        
-                    else:
-                        audio_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_audio"], modality = "audio")
-                        video_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_video"], modality = "video")
-                        audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                      labels = output_dict["labels_audiovisual"], modality = "audiovisual")
                 else:
-                    if "Qwen" in self.llm_model:
-                        audio_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_audio"])
-                        video_output = self.llm(inputs_embeds = torch.cat([output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_video"])
-                        audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
-                                                labels = output_dict["labels_audiovisual"])
-                        
-                    else:
-                        audio_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_audio"])
-                        video_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                labels = output_dict["labels_video"])
-                        audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
-                                                      labels = output_dict["labels_audiovisual"])
+                    audio_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
+                                            labels = output_dict["labels_audio"], modality = "audio")
+                    video_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
+                                            labels = output_dict["labels_video"], modality = "video")
+                    audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
+                                                  labels = output_dict["labels_audiovisual"], modality = "audiovisual")
+            else:
+                if "Qwen" in self.llm_model:
+                    audio_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
+                                            labels = output_dict["labels_audio"])
+                    video_output = self.llm(inputs_embeds = torch.cat([output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
+                                            labels = output_dict["labels_video"])
+                    audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"]], dim = 1),
+                                            labels = output_dict["labels_audiovisual"])
                     
-                
-                audio_loss = audio_output.loss*self.matry_weights[0] if self.matry_weights else audio_output.loss
-                video_loss = video_output.loss*self.matry_weights[1] if self.matry_weights else video_output.loss
-                audiovisual_loss = audiovisual_output.loss*self.matry_weights[2] if self.matry_weights else audiovisual_output.loss
-                
-                
-            #matryoshka_loss /= 3
-            
-            if self.is_MoE and self.peft_config_llm.APPLY_LOAD_BAL_LOSS:
-                if self.PETF_LLM_name == "lora":
-                    load_balancing_loss_Q /= 3
-                    load_balancing_loss_V /= 3
-                    return audio_loss, video_loss, audiovisual_loss, load_balancing_loss_Q, load_balancing_loss_V
                 else:
-                    load_balancing_loss /= 3
-                    return audio_loss, video_loss, audiovisual_loss, load_balancing_loss
-                #return matryoshka_loss, load_balancing_loss
-            else:
-                return audio_loss, video_loss, audiovisual_loss
-                #return matryoshka_loss
+                    audio_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], self.prompt_audio.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
+                                            labels = output_dict["labels_audio"])
+                    video_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["video_tokens"], self.prompt_video.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
+                                            labels = output_dict["labels_video"])
+                    audiovisual_output = self.llm(inputs_embeds = torch.cat([output_dict["text_embeddings"][:,0,:].unsqueeze(1), output_dict["audio_tokens"], output_dict["video_tokens"], self.prompt_audiovisual.expand(inputs["tokens"].shape[0],-1,-1), output_dict["text_embeddings"][:, 1:, :]], dim = 1),
+                                                  labels = output_dict["labels_audiovisual"])
+                
             
+            audio_loss = audio_output.loss*self.matry_weights[0] if self.matry_weights else audio_output.loss
+            video_loss = video_output.loss*self.matry_weights[1] if self.matry_weights else video_output.loss
+            audiovisual_loss = audiovisual_output.loss*self.matry_weights[2] if self.matry_weights else audiovisual_output.loss
+                
+            return audio_loss, video_loss, audiovisual_loss
         
-        else: # Inference step: we decode starting from the audio/video tokens + prompt tokens (if used) + bos. 
-            #test_for_expert_analysys = True
-            #if test_for_expert_analysys:
-            #    embeddings = self.prepare_inputs(inputs, is_trainval) 
-                
-            #    return self.llm(inputs_embeds = embeddings, output_router_logits = True).router_logits
-                
+        else:
                
             embeddings = self.prepare_inputs(inputs, is_trainval, test_ratio_matry_audio = test_ratio_matry_audio, test_ratio_matry_video = test_ratio_matry_video) 
            
@@ -504,17 +313,6 @@ class AVSR_LLMs(nn.Module):
                                                     pad_token_id = self.tokenizer.vocab["<pad>"],
                                                     modality = modality
                                                     )
-            elif self.llm_model in  ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", "meta-llama/Llama-2-7b-hf"]: # Llama 2.
-                decoded_ids = self.llm.generate(inputs_embeds = embeddings, max_new_tokens = self.max_dec_tokens, num_beams=self.num_beams, eos_token_id = self.tokenizer.vocab["</s>"], 
-                                                bos_token_id = self.tokenizer.vocab["<s>"], 
-                                                pad_token_id = self.tokenizer.vocab["<pad>"],
-                                                )
-            elif self.llm_model == "mistralai/Mistral-7B-v0.1":
-                decoded_ids = self.llm.generate(inputs_embeds = embeddings, max_new_tokens = self.max_dec_tokens, num_beams=self.num_beams, eos_token_id = self.tokenizer.vocab["</s>"], 
-                                                bos_token_id = self.tokenizer.vocab["<s>"], 
-                                                pad_token_id = self.tokenizer.vocab["<pad>"],
-                                                #repetition_penalty=1.5
-                                                )
             elif "Qwen" in self.llm_model:
                 decoded_ids = self.llm.generate(inputs_embeds = embeddings, max_new_tokens = self.max_dec_tokens, num_beams=self.num_beams, eos_token_id = self.tokenizer.vocab["<|endoftext|>"], 
                                                 pad_token_id = self.tokenizer.vocab["<|endoftext|>"],
@@ -605,20 +403,14 @@ class AVSR_LLMs(nn.Module):
             
             text_embeddings_ = self.llm.model.embed_tokens(inputs["tokens"])
             
-            
-            # An important note here: the tokenizer by default inserts the EOS and BOS tokens. Since we do that already in the collate_LLM, here we need to
-            # get rid of them explicitly --> [:,1:-1].
-            #prompt_ids = self.tokenizer(self.prompt, return_tensors = "pt").input_ids.to(text_embeddings_.device)
-            
             #prompt_tokens_start_at = 0 if "Qwen" in self.llm_model else 1
             if self.modality == "audio":
-                prompt_ids = self.prompt_audio#.to(text_embeddings_.device)
+                prompt_ids = self.prompt_audio
             elif self.modality == "video":
-                prompt_ids = self.prompt_video#.device)
+                prompt_ids = self.prompt_video
             else:
                 prompt_ids = self.prompt_audiovisual#.device)
-            #prompt_embeddings = prompt_ids.expand(inputs["tokens"].shape[0],-1)#self.llm.model.embed_tokens(prompt_ids.expand(inputs["tokens"].shape[0],-1))
-           
+        
             if "Qwen" in self.llm_model:
                     text_embeddings = prompt_ids
             else:
@@ -733,24 +525,11 @@ class AVSR_LLMs(nn.Module):
     
     def encode_audio(self, audio, max_len, is_trainval = None, test_ratio_matry_audio = None):
             
-        #if is_trainval: # In test time we don't have to convert to float32 and then convert back to bfloat16!!
+        #if is_trainval: # In test time we don't have to convert to float32 and then convert back to bfloat16!
         audios = audio.to(torch.float32)
-        
         audios = audios.cpu().numpy()
         
-        
         audio_extract = self.audio_frontend(audios.squeeze(-1), return_tensors="pt",sampling_rate =16000).input_features
-        #if is_trainval:
-        #    audio_enc = self.audio_encoder(audio_extract.cuda().to(torch.bfloat16)).last_hidden_state
-        #else:
-        #    audio_enc = self.audio_encoder(audio_extract.cuda()).last_hidden_state
-        
-        # Next 3 lines for experiments without ASR encoder!!
-        #inputs_embeds = nn.functional.gelu(self.audio_encoder.conv1(audio_extract.cuda().to(torch.bfloat16)))
-        #audio_enc = nn.functional.gelu(self.audio_encoder.conv2(inputs_embeds))
-        #audio_enc = torch.reshape(audio_enc,(-1,audio_enc.shape[-1], audio_enc.shape[1]))
-        
-        
         audio_enc = self.audio_encoder(audio_extract.cuda().to(torch.bfloat16)).last_hidden_state
     
         # Due to the 30s padding required by Whisper, we drop the tokens that correspond to the padded 0s. As 1s corresponds to 50 tokens, we truncate acccordingly.
@@ -824,4 +603,3 @@ class AVSR_LLMs(nn.Module):
                     audio_enc = audio_enc.transpose(1,2).contiguous()
                         
             return audio_enc
-        
