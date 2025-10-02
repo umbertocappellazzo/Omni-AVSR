@@ -29,7 +29,7 @@ class AVSR_LLMs(nn.Module):
                  downsample_ratio_audio, downsample_ratio_video, audio_encoder_name, compression_mode,
                  unfrozen_modules, max_dec_tokens, num_beams, PETF_LLM_name = None, peft_config_llm = None, 
                  remove_layernorm_from_projector = False, matry_weights = None,
-                 is_task_specific = None, is_matryoshka = False,
+                 is_task_specific = None, is_matryoshka = False, is_single_matry_projector = False
                  ):
         
         super().__init__()
@@ -50,6 +50,7 @@ class AVSR_LLMs(nn.Module):
         self.matry_weights = matry_weights
         self.is_task_specific = is_task_specific
         self.is_matryoshka = is_matryoshka
+        self.is_single_matry_projector = is_single_matry_projector
             
         if modality == "audio" or modality == "audiovisual":
                 
