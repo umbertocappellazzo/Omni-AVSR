@@ -51,7 +51,11 @@ def parse_args():
         help= "How we compress the tokens.",
         choices= ["avg-pooling","stack"]
     )
-
+    parser.add_argument(
+        "--is-matryoshka",
+        default= False,
+        type= bool,
+    )
     parser.add_argument(
         "--pretrained-model-path",                      
         default= None,
