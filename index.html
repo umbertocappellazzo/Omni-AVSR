@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Paper Title</title>
+    <link href="https://fonts.cdnjs.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'ComicSans';
+            src: url('https://www.fontspace.com/download/font/comic-sans-ms') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fafafa;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        header .authors {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.95;
+        }
+
+        header .institution {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            margin-bottom: 1.5rem;
+        }
+
+        header .paper-buttons {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        header .paper-link {
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px solid white;
+            color: white;
+            padding: 0.65rem 1.4rem;
+            transition: all 0.3s;
+        }
+
+        header .paper-link:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        nav {
+            background-color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #764ba2;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            background: white;
+            margin: 2rem 0;
+            padding: 3rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        h3 {
+            color: #764ba2;
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        .highlights {
+            background-color: #f0f4ff;
+            padding: 1.5rem;
+            border-left: 4px solid #667eea;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .highlights ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .highlights li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .highlights li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        #abstract {
+            background: linear-gradient(135deg, #f0f4ff 0%, #f5e6ff 100%);
+        }
+
+        .paper-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: transform 0.2s;
+            margin: 1rem 0.5rem 1rem 0;
+        }
+
+        .paper-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .result-card {
+            background: #f8f9ff;
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid #e0e6ff;
+        }
+
+        .result-card h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-card p {
+            font-size: 0.95rem;
+        }
+
+        figure {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        figure img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        figcaption {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table th {
+            background-color: #f0f4ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background-color: #fafafa;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            nav ul {
+                gap: 1rem;
+            }
+
+            section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Your Paper Title Here</h1>
+        <div class="authors">Author Name, Co-Author Name</div>
+        <div class="institution">Your University / Institution</div>
+        <div class="paper-buttons">
+            <a href="#" class="paper-link">📄 PDF Paper</a>
+            <a href="#" class="paper-link">🔗 arXiv Link</a>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#abstract">Abstract</a></li>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#method">Method</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="#conclusion">Conclusion</a></li>
+            <li><a href="#references">References</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Abstract Section -->
+        <section id="abstract">
+            <h2>Abstract</h2>
+            <p>
+                This is where you describe your paper's abstract. Provide a concise summary of the problem, your approach, and the key findings. 
+                Make it compelling and informative so readers understand the contribution of your work.
+            </p>
+            <div class="highlights">
+                <ul>
+                    <li>Key contribution or finding 1</li>
+                    <li>Key contribution or finding 2</li>
+                    <li>Key contribution or finding 3</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Introduction Section -->
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>
+                Introduce the motivation behind your research. Describe the problem you're addressing and why it matters. 
+                Explain what makes your work different or better than existing approaches.
+            </p>
+            <h3>Problem Statement</h3>
+            <p>
+                Detail the specific problem you're solving. What are the limitations of current methods? 
+                Why is this problem important to the research community or industry?
+            </p>
+            <h3>Contribution</h3>
+            <p>
+                Clearly articulate your main contributions. What novel insights or methods does your paper introduce?
+            </p>
+        </section>
+
+        <!-- Method Section -->
+        <section id="method">
+            <h2>Method</h2>
+            <p>
+                Describe your methodology in detail. Walk readers through your approach step by step.
+            </p>
+            <h3>Overview</h3>
+            <p>
+                Provide a high-level overview of your method before diving into technical details.
+            </p>
+            
+            <figure>
+                <img src="images/ciao.png" alt="Method Overview">
+                <figcaption>Figure 1: Overview of the proposed method. Replace with your actual figure.</figcaption>
+            </figure>
+
+            <h3>Technical Details</h3>
+            <p>
+                Break down the technical components of your method. Use subsections to organize different aspects.
+            </p>
+            <h3>Component A</h3>
+            <p>
+                Explain the first major component or stage of your method. Include mathematical formulations if relevant.
+            </p>
+            <h3>Component B</h3>
+            <p>
+                Explain the second major component. You can add as many components as needed.
+            </p>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results">
+            <h2>Results</h2>
+            <p>
+                Present your experimental results and findings. Include both qualitative and quantitative analysis.
+            </p>
+
+            <h3>Main Results</h3>
+            <div class="results-grid">
+                <div class="result-card">
+                    <h4>Metric 1</h4>
+                    <p>Describe the first important result or metric. Include numerical values and what they mean.</p>
+                </div>
+                <div class="result-card">
+                    <h4>Metric 2</h4>
+                    <p>Describe the second important result. How does this compare to baseline methods?</p>
+                </div>
+                <div class="result-card">
+                    <h4>Metric 3</h4>
+                    <p>Present additional results that validate your approach or show its strengths.</p>
+                </div>
+            </div>
+
+            <h3>Comparison with Baselines</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Metric 1</th>
+                        <th>Metric 2</th>
+                        <th>Metric 3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Baseline A</td>
+                        <td>75.2%</td>
+                        <td>0.85</td>
+                        <td>2.1s</td>
+                    </tr>
+                    <tr>
+                        <td>Baseline B</td>
+                        <td>78.5%</td>
+                        <td>0.88</td>
+                        <td>1.8s</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Our Method</strong></td>
+                        <td><strong>85.3%</strong></td>
+                        <td><strong>0.92</strong></td>
+                        <td><strong>1.5s</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Qualitative Analysis</h3>
+            <figure>
+                <img src="images/ciao.png" alt="Results">
+                <figcaption>Figure 2: Qualitative comparison of our method with baselines. Replace with your actual results.</figcaption>
+            </figure>
+
+            <h3>Ablation Study</h3>
+            <p>
+                Present ablation studies showing the contribution of different components. This helps readers understand 
+                which parts of your method are most important.
+            </p>
+        </section>
+
+        <!-- Conclusion Section -->
+        <section id="conclusion">
+            <h2>Conclusion</h2>
+            <p>
+                Summarize your work and its main findings. Reiterate the key contributions and their significance.
+            </p>
+            <h3>Future Work</h3>
+            <p>
+                Discuss potential future directions for this research. What extensions or improvements could be made?
+            </p>
+        </section>
+
+        <!-- References Section -->
+        <section id="references">
+            <h2>References</h2>
+            <p>
+                <strong>[1]</strong> Author et al. "Paper Title." Conference/Journal, Year.
+            </p>
+            <p>
+                <strong>[2]</strong> Author et al. "Another Paper Title." Conference/Journal, Year.
+            </p>
+            <p>
+                <strong>[3]</strong> Author et al. "Related Work Title." Conference/Journal, Year.
+            </p>
+        </section>
+
+        <!-- Citation Section -->
+        <section id="citation">
+            <h2>Citation</h2>
+            <p>If you find this work useful, please cite our paper using the following BibTeX entry:</p>
+            <div style="background-color: #f5f5f5; padding: 1.5rem; border-radius: 6px; border-left: 4px solid #667eea; overflow-x: auto;">
+                <pre style="margin: 0; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #333;">@article{yourshortname,
+                    title={Your Paper Title Here},
+            author={Author Name and Co-Author Name},
+            journal={Journal or Conference Name},
+            year={2024},
+            doi={your-doi-here},
+            url={https://your-paper-url.com}
+            }</pre>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Your Name. | <a href="https://github.com">GitHub</a> | <a href="https://twitter.com">Twitter</a></p>
+    </footer>
+</body>
+</html>
