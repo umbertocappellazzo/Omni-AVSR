@@ -10,9 +10,9 @@ import logging
 import os
 from argparse import ArgumentParser
 import torch
-from avg_checkpoints import ensemble_original
+from utils.avg_checkpoints import ensemble_original
 from datamodule.data_module import DataModule_LLM
-from lightning_LlamaAVSR import ModelModule_LLM
+from Omni_AVSR.lightning_LlamaAVSR import ModelModule_LLM
 
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint

@@ -10,8 +10,8 @@ import logging
 from argparse import ArgumentParser
 
 from datamodule.data_module import DataModule_LLM
-from pytorch_lightning import Trainer
-from lightning_LlamaAVSR import ModelModule_LLM
+from Omni_AVSR.pytorch_lightning import Trainer
+from Omni_AVSR.lightning_LlamaAVSR import ModelModule_LLM
 from pytorch_lightning.loggers import WandbLogger
 
 

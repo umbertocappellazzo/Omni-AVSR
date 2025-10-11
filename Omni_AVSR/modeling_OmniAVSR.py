@@ -5,11 +5,12 @@ Created on Thu Jul 17 15:14:59 2025
 
 @author: umbertocappellazzo
 """
-
+import sys
+sys.path.append("..")
 import torch
 from torch import nn
-from Llama_LoRA import LlamaForCausalLM_lora
-from Qwen_LoRA import Qwen2ForCausalLM_lora
+from .Llama_LoRA import LlamaForCausalLM_lora
+from .Qwen_LoRA import Qwen2ForCausalLM_lora
 from transformers import WhisperModel, LlamaForCausalLM, AutoFeatureExtractor
 import fairseq
 from av_hubert.avhubert.hubert_asr import AVHubertSeq2Seq, AVHubertSeq2SeqConfig
