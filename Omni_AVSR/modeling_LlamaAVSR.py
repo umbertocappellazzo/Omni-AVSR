@@ -537,8 +537,8 @@ class AVSR_LLMs(nn.Module):
         #if is_trainval: # In test time we don't have to convert to float32 and then convert back to bfloat16!
         audios = audio.to(torch.float32)
         audios = audios.cpu().numpy()
-        audio_extract = self.audio_frontend(audios[:,:,0], return_tensors="pt",sampling_rate =16000).input_features
-        #audio_extract = self.audio_frontend(audios.squeeze(-1), return_tensors="pt",sampling_rate =16000).input_features
+        
+        audio_extract = self.audio_frontend(audios.squeeze(-1), return_tensors="pt",sampling_rate =16000).input_features
        
         audio_enc = self.audio_encoder(audio_extract.cuda().to(torch.bfloat16)).last_hidden_state
     
