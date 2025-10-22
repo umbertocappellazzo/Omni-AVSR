@@ -175,7 +175,7 @@ class ModelModule_LLM(LightningModule):
 
 
         generated_text = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-
+        print(generated_text)
         self.total_edit_distance += compute_word_level_distance(batch["gold_text"], generated_text)
         self.total_length += len(batch["gold_text"].split())
         

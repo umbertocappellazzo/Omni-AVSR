@@ -224,6 +224,11 @@ def parse_args():
         type=bool,
         help="Removes LayerNorm from the audio and video projectors.",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Flag to use debug level for logging",
+    )
     
     return parser.parse_args()
 
