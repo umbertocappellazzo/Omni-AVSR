@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omni-AVSR: Towards Unified Multimodal Speech Recognition with Large Language Models</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Your Paper Title</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -129,14 +129,13 @@
 
         /* Navigation */
         nav {
-            background-color: var(--white);
-            padding: 1.2rem 2rem;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 147, 251, 0.05) 50%, rgba(255, 255, 255, 0.95) 100%);
+            padding: 1.8rem 2rem;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             position: sticky;
             top: 0;
             z-index: 100;
             backdrop-filter: blur(10px);
-            background-color: rgba(255, 255, 255, 0.95);
         }
 
         nav ul {
@@ -152,8 +151,8 @@
         nav a {
             text-decoration: none;
             color: var(--text);
-            font-weight: 600;
-            font-size: 0.95rem;
+            font-weight: 700;
+            font-size: 1.05rem;
             position: relative;
             transition: color 0.3s;
         }
@@ -378,34 +377,6 @@
             font-style: italic;
         }
 
-        /* Two-column figures */
-        .figures-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-            margin: 2.5rem 0;
-        }
-
-        .figures-container figure {
-            margin: 0;
-        }
-
-        .figures-container.small-large {
-            grid-template-columns: 0.85fr 1.15fr;
-        }
-
-        /* Inline figure */
-        .figure-inline {
-            float: left;
-            width: 45%;
-            margin: 0 2rem 1.5rem 0;
-        }
-
-        .figure-inline img {
-            max-width: 100%;
-            height: auto;
-        }
-
         /* Comparison Table */
         .comparison-table {
             width: 100%;
@@ -506,7 +477,6 @@
         }
 
         /* Responsive */
-
         @media (max-width: 1024px) {
             .overview-cards {
                 grid-template-columns: repeat(2, 1fr);
@@ -556,37 +526,39 @@
 </head>
 <body>
     <header>
-        <h1 style="font-family:'Comic Sans MS';color:#343434">Omni-AVSR: Towards Unified Multimodal Speech Recognition with Large Language Models</h1>
-        <div class="authors">Umberto Cappellazzo<sup style="color:red;">&spades;</sup>, Xubo Liu<sup style="color:red;">&clubs;</sup>, Pingchuan Ma<sup style="color:red;">&hearts;</sup>, Stavros Petridis<sup style="color:red;">&spades;,&diams;</sup>, Maja Pantic<sup style="color:red;">&spades;,&diams;</sup></div>
-        <div class="institution">
-            <sup style="color:red;">&spades;</sup><span style="font-family:'Comic Sans MS';color:#343434;"> Imperial College London</span> &nbsp; <sup style="color:red;">&clubs;</sup><span style="font-family:'Comic Sans MS';color:#343434"> Meta Superintelligence Labs</span> &nbsp; <sup style="color:red;">&hearts;</sup><span style="font-family:'Comic Sans MS';color:#343434"> Meta AI</span> &nbsp; <sup style="color:red;">&diams;</sup><span style="font-family:'Comic Sans MS';color:#343434"> NatWest AI Research</span>
-        </div>
+        <h1>Your Paper Title Here</h1>
+        <div class="authors">Author Name, Co-Author Name</div>
+        <div class="institution">Your University / Institution</div>
         <div class="paper-buttons">
-            <a href="#" class="paper-link" style="font-family:'Comic Sans MS'">📄 PDF Paper</a>
-            <a href="#" class="paper-link" style="font-family:'Comic Sans MS'"><i class="fab fa-github"></i> Code & Weights</a>
+            <a href="#" class="paper-link">📄 PDF Paper</a>
+            <a href="#" class="paper-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display: inline-block; margin-right: 6px; vertical-align: middle;">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.004 12.004 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                GitHub Code
+            </a>
         </div>
     </header>
 
     <nav>
         <ul>
-            <li><a href="#abstract" style="font-family:'Comic Sans MS'">Abstract</a></li>
-            <li><a href="#introduction" style="font-family:'Comic Sans MS'">Overview</a></li>
-            <li><a href="#method" style="font-family:'Comic Sans MS'">Omni-AVSR Details</a></li>
-            <li><a href="#results" style="font-family:'Comic Sans MS'">Main Results</a></li>
-            <li><a href="#results" style="font-family:'Comic Sans MS'">Ablation Studies</a></li>
-            <li><a href="#conclusion" style="font-family:'Comic Sans MS'">Conclusion</a></li>
-            <li><a href="#citation" style="font-family:'Comic Sans MS'">Citation</a></li>
+            <li><a href="#abstract">Abstract</a></li>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#method">Method</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="#conclusion">Conclusion</a></li>
+            <li><a href="#citation">Citation</a></li>
         </ul>
     </nav>
 
     <div class="container">
         <!-- Abstract Section -->
         <section id="abstract">
-            <h2 style="font-family:'Comic Sans MS'">Abstract</h2>
+            <h2>Abstract</h2>
             <p>
-                Large language models (LLMs) have recently achieved impressive results in speech recognition across multiple modalities, including Auditory Speech Recognition (ASR), Visual Speech Recognition (VSR), and Audio-Visual Speech Recognition (AVSR). Despite this progress, current LLM-based approaches typically address each task independently, training separate models that raise computational and deployment costs while missing potential cross-task synergies. They also rely on fixed-rate token compression, which restricts flexibility in balancing accuracy with efficiency. These limitations highlight the need for a unified framework that can support ASR, VSR, and AVSR while enabling elastic inference. To this end, we present Omni-AVSR, a unified audio-visual LLM that combines efficient multi-granularity training with parameter-efficient adaptation. Specifically, we adapt the matryoshka representation learning paradigm to efficiently train across multiple audio and visual granularities, reducing its inherent training cost. Furthermore, we explore three LoRA-based strategies for adapting the backbone LLM, balancing shared and task-specific specialization. Experiments on LRS2 and LRS3 show that Omni-AVSR achieves comparable or superior accuracy to state-of-the-art baselines while training a single model at substantially lower training and deployment costs. The model also remains robust under acoustic noise, and we analyze its scaling behavior as LLM size increases, providing insights into the trade-off between performance and efficiency.
+                This is where you describe your paper's abstract. Provide a concise summary of the problem, your approach, and the key findings. 
+                Make it compelling and informative so readers understand the contribution of your work at a glance.
             </p>
-            <!--
             <div class="highlights">
                 <ul>
                     <li>Key contribution or finding 1</li>
@@ -594,33 +566,29 @@
                     <li>Key contribution or finding 3</li>
                 </ul>
             </div>
-        -->
         </section>
 
         <!-- Introduction Section -->
         <section id="introduction">
-            <h2 style="font-family:'Comic Sans MS'">Overview</h2>
-
-            <div class="overview-cards">
-                <a href="#overview-section" class="overview-card">
-                    <h3 style="font-family:'Comic Sans MS'">OMNI-AVSR Details</h3>
-                    <p>Learn about Omni-AVSR key components: efficient matryoshka traning and LoRA-based finetuning.</p>
-                </a>
-                <a href="#results" class="overview-card">
-                    <h3 style="font-family:'Comic Sans MS'">Main Results</h3>
-                    <p>Omni-AVSR results against state-of-the-art methods on LRS2 and LRS3 datasets.</p>
-                </a>
-                <a href="#ablation-section" class="overview-card">
-                    <h3 style="font-family:'Comic Sans MS'">Ablation Studies</h3>
-                    <p>Explore Omni-AVSR scaling behavior or the importance of each task in the training paradigm.</p>
-                </a>
-            </div>
-
+            <h2>Introduction</h2>
+            <p>
+                Introduce the motivation behind your research. Describe the problem you're addressing and why it matters. 
+                Explain what makes your work different or better than existing approaches.
+            </p>
+            <h3>Problem Statement</h3>
+            <p>
+                Detail the specific problem you're solving. What are the limitations of current methods? 
+                Why is this problem important to the research community or industry?
+            </p>
+            <h3>Contribution</h3>
+            <p>
+                Clearly articulate your main contributions. What novel insights or methods does your paper introduce?
+            </p>
         </section>
 
         <!-- Method Section -->
         <section id="method">
-            <h2 style="font-family:'Comic Sans MS'">Omni-AVSR Details</h2>
+            <h2>Method</h2>
             <p>
                 Describe your methodology in detail. Walk readers through your approach step by step.
             </p>
@@ -629,9 +597,24 @@
                 Provide a high-level overview of your method before diving into technical details.
             </p>
             
+            <div class="overview-cards">
+                <a href="#overview-section" class="overview-card">
+                    <h3>OMNI-AVSR Overview</h3>
+                    <p>Describe the overall approach and key components of your OMNI-AVSR system.</p>
+                </a>
+                <a href="#results" class="overview-card">
+                    <h3>Main Results</h3>
+                    <p>Highlight the primary achievements and performance metrics of your method.</p>
+                </a>
+                <a href="#ablation-section" class="overview-card">
+                    <h3>Ablation Studies</h3>
+                    <p>Show the contribution of different components to the overall performance.</p>
+                </a>
+            </div>
+
             <figure>
-                <img src="./images/Omni-AVSR_overview.png" alt="Method Overview">
-                <figcaption>Overview of <b>(a)</b> the proposed Omni-AVSR model and <b>(b)</b> its Omni-LoRA variants.</figcaption>
+                <img src="https://via.placeholder.com/700x400?text=Method+Overview+Figure" alt="Method Overview">
+                <figcaption>Figure 1: Overview of the proposed method. Replace with your actual figure.</figcaption>
             </figure>
 
             <h3>Technical Details</h3>
@@ -650,36 +633,82 @@
 
         <!-- Results Section -->
         <section id="results">
-            <h2>Main Results</h2>
+            <h2>Results</h2>
             <p>
                 Present your experimental results and findings. Include both qualitative and quantitative analysis.
             </p>
 
-            <div class="figures-container small-large">
-                <figure>
-                    <img src="./images/Main_table.png" alt="Method Figure 1">
-                    <figcaption>ASR, VSR, AVSR results in terms of WER (%) across audio and video compression rates.</figcaption>
-                </figure>
-                <figure>
-                    <img src="./images/Unified_comparison.png" alt="Method Figure 2">
-                    <figcaption>Comparison with state-of-the-art methods using a single model for ASR, VSR, and AVSR on LRS3.</figcaption>
-                </figure>
+            <h3>Main Results</h3>
+            <div class="results-grid">
+                <div class="result-card">
+                    <h4>Metric 1</h4>
+                    <p>Describe the first important result or metric. Include numerical values and what they mean.</p>
+                </div>
+                <div class="result-card">
+                    <h4>Metric 2</h4>
+                    <p>Describe the second important result. How does this compare to baseline methods?</p>
+                </div>
+                <div class="result-card">
+                    <h4>Metric 3</h4>
+                    <p>Present additional results that validate your approach or show its strengths.</p>
+                </div>
             </div>
 
+            <h3>Comparison with Baselines</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Metric 1</th>
+                        <th>Metric 2</th>
+                        <th>Metric 3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Baseline A</td>
+                        <td>75.2%</td>
+                        <td>0.85</td>
+                        <td>2.1s</td>
+                    </tr>
+                    <tr>
+                        <td>Baseline B</td>
+                        <td>78.5%</td>
+                        <td>0.88</td>
+                        <td>1.8s</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Our Method</strong></td>
+                        <td><strong>85.3%</strong></td>
+                        <td><strong>0.92</strong></td>
+                        <td><strong>1.5s</strong></td>
+                    </tr>
+                </tbody>
+            </table>
 
-            <figure class="figure-inline">
-                <img src="./images/Coefficients.png" alt="Description">
-                <figcaption>Figure X: Your caption here.</figcaption>
+            <h3>Qualitative Analysis</h3>
+            <figure>
+                <img src="https://via.placeholder.com/700x500?text=Results+Visualization" alt="Results">
+                <figcaption>Figure 2: Qualitative comparison of our method with baselines. Replace with your actual results.</figcaption>
             </figure>
-            <p>Your text here will wrap around the figure on the right side...</p>
+
+            <h3 id="ablation-section">Ablation Study</h3>
+            <p>
+                Present ablation studies showing the contribution of different components. This helps readers understand 
+                which parts of your method are most important.
+            </p>
+        </section>
 
         <!-- Conclusion Section -->
         <section id="conclusion">
             <h2>Conclusion</h2>
             <p>
-                In this work, we introduce Omni-AVSR, the first unified audio-visual LLM that jointly supports ASR, VSR, and AVSR while enabling elastic inference under a single set of weights. By combining efficient matryoshka-based multi-granularity training with LoRA adaptation strategies, Omni-AVSR achieves strong performance while reducing training and deployment costs. Experiments on LRS2 and LRS3 show that Omni-AVSR matches or surpasses state-of-the-art baselines, remains robust in noisy conditions, and delivers favorable trade-offs when scaling LLM size. Furthermore, Omni-AVSR provides significant computational savings, requiring only one model and a reduced number of LLM passes during training.
+                Summarize your work and its main findings. Reiterate the key contributions and their significance.
             </p>
-            
+            <h3>Future Work</h3>
+            <p>
+                Discuss potential future directions for this research. What extensions or improvements could be made?
+            </p>
         </section>
 
         <!-- Citation Section -->
@@ -687,11 +716,13 @@
             <h2>Citation</h2>
             <p>If you find this work useful, please cite our paper using the following BibTeX entry:</p>
             <div class="citation-box">
-                <pre>@article{Omni-AVSR,
-  title={Omni-AVSR: Towards Unified Multimodal Speech Recognition with Large Language Models},
-  author={Umberto Cappellazzo and Xubo Liu and Pingchuan Ma and Stavros Petridis and Maja Pantic},
-  journal={arxiv 2025},
-  year={2025},
+                <pre>@article{yourshortname,
+  title={Your Paper Title Here},
+  author={Author Name and Co-Author Name},
+  journal={Journal or Conference Name},
+  year={2024},
+  doi={your-doi-here},
+  url={https://your-paper-url.com}
 }</pre>
             </div>
         </section>
