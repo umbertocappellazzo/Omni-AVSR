@@ -27,8 +27,8 @@
 ## 🌟 Highlights
 
 <div align="center">
-  <img src="assets/results.png" alt="Teaser" width="800"/>
-  <p><i>Figure 1: Overview of our method and main results.</i></p>
+  <img src="assets/pipeline.png" alt="Architecture" width="800"/>
+  <p><i>Figure 2: Overall architecture of our proposed Omni-AVSR method.</i></p>
 </div>
 
 ✨ **Key Contributions:**
@@ -66,22 +66,33 @@
 
 ### Architecture
 
-<div align="center">
-  <img src="assets/pipeline.png" alt="Architecture" width="800"/>
-  <p><i>Figure 2: Overall architecture of our proposed Omni-AVSR method.</i></p>
-</div>
-
 Our method consists of three main components:
 
 1. **Component A**: Description of the first component and its role
 2. **Component B**: Description of the second component and its role
 3. **Component C**: Description of the third component and its role
 
-### Key Features
+### Key Results
 
 - 🎨 **Feature 1**: Detailed explanation
 - ⚡ **Feature 2**: Detailed explanation
 - 🔧 **Feature 3**: Detailed explanation
+
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <img src="assets/main_table.png" alt="Architecture" width="380"/>
+        <p><i>Figure 2: Overall architecture of the proposed Omni-AVSR method.</i></p>
+      </td>
+      <td align="center" width="50%">
+        <img src="assets/results.png" alt="Omni-LoRA Variants" width="380"/>
+        <p><i>Figure 3: Omni-LoRA variants (Shared, Task-specific, and Hybrid).</i></p>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
