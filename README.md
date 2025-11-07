@@ -33,7 +33,7 @@
 
 ✨ **Key Contributions:**
 - We present **Omni-AVSR**, the first audio-visual LLM that supports ASR, VSR, and AVSR jointly while enabling elastic inference under a single set of weights.
-- Omni-AVSR hinges upon an optimized *matryoshka*-based framework to support efficient multi-granularity training.
+- Omni-AVSR hinges upon an optimized *matryoshka*-based 🪆 framework to support efficient multi-granularity training.
 - To adapt the backbone LLM to all tasks in a parameter-efficient manner, Omni-AVSR uses three ad-hoc *LoRA*-based methods.
 - Omni-AVSR achieves SoTA results on LRS2 and LRS3 benchmarks, whilst substantially reducing training and deployment costs.
 
@@ -42,7 +42,7 @@
 ## 📋 Table of Contents
 
 - [Abstract](#-abstract)
-- [Method Overview](#-method-overview)
+- [Main Results](#-main-results)
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
 - [Dataset Preparation](#-dataset-preparation)
@@ -62,21 +62,12 @@
 
 ---
 
-## 🔬 Method Overview
+## 🔬 Main Results
 
-### Architecture
-
-Our method consists of three main components:
-
-1. **Component A**: Description of the first component and its role
-2. **Component B**: Description of the second component and its role
-3. **Component C**: Description of the third component and its role
-
-### Key Results
-
-- 🎨 **Feature 1**: Detailed explanation
-- ⚡ **Feature 2**: Detailed explanation
-- 🔧 **Feature 3**: Detailed explanation
+- ⚡ Omni-AVSR attains SoTA results on LRS2 and LRS3 while traning a single model (**Table 1**).
+- ⚡ Omni-AVSR outperforms prior SoTA methods that support ASR-VSR-AVSR within a single model (**Table 2**).
+- ⚡ Omni-AVSR achieves competitive WERs while requiring substantially fewer parameters and training data hours than all baselines (**Figure 2**).
+- ⚡ Among several ablation studies, we report Omni-AVSR trend as we consider LLMs of different sizes from the Llama and Qwen 2.5 families (**Figure 3**). 
 
 
 <div align="center">
@@ -84,11 +75,27 @@ Our method consists of three main components:
     <tr>
       <td align="center" width="50%">
         <img src="assets/main_table.png" alt="Architecture" width="380"/>
-        <p><i>Figure 2: Overall architecture of the proposed Omni-AVSR method.</i></p>
+        <p><i>Table 1: Main results on LRS2 and LRS3.</i></p>
       </td>
       <td align="center" width="50%">
-        <img src="assets/results.png" alt="Omni-LoRA Variants" width="380"/>
-        <p><i>Figure 3: Omni-LoRA variants (Shared, Task-specific, and Hybrid).</i></p>
+        <img src="assets/unified_comparison.png" alt="Omni-LoRA Variants" width="380"/>
+        <p><i>Table 2: Comparison with unified methods on LRS3.</i></p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <img src="assets/results.png" alt="Architecture" width="380"/>
+        <p><i>Figure 4: Comparison with SoTA methods for AVSR on LRS3.</i></p>
+      </td>
+      <td align="center" width="50%">
+        <img src="assets/scaling_LLM.png" alt="Omni-LoRA Variants" width="330"/>
+        <p><i>Figure 5: Scaling trend of Omni-AVSR-ST when we increase the LLM size on LRS3..</i></p>
       </td>
     </tr>
   </table>
@@ -96,159 +103,73 @@ Our method consists of three main components:
 
 ---
 
-## 🛠️ Installation
+## Setup 🛠 
+Our setup follows that of [Llama-AVSR](https://github.com/umbertocappellazzo/Llama-AVSR).
 
-### Prerequisites
+### 1) Installation
 
-- Python 3.8+
-- PyTorch 2.0+
-- CUDA 11.8+ (for GPU training)
-
-### Setup Environment
+Install necessary dependencies: 
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/your-repo-name.git
-cd your-repo-name
-
-# Create a conda environment
-conda create -n yourproject python=3.8
-conda activate yourproject
-
-# Install PyTorch (adjust for your CUDA version)
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-
-# Install other dependencies
-pip install -r requirements.txt
+   pip install -r requirements.txt
+   cd av_hubert
+   git submodule init
+   git submodule update
+   cd fairseq
+   pip install --editable ./
 ```
 
-### Requirements
+### 2) Datasets Pre-processing
 
-Create a `requirements.txt` file with:
+We rigorously follow auto-avsr [paper](https://arxiv.org/abs/2303.14307) to pre-process the LRS2 and LRS2 datasets. All the steps 
+to achieve this can be found [here](https://github.com/mpc001/auto_avsr/tree/main/preparation).
 
-```txt
-torch>=2.0.0
-torchvision>=0.15.0
-numpy>=1.21.0
-opencv-python>=4.5.0
-tqdm>=4.62.0
-tensorboard>=2.8.0
-pyyaml>=6.0
-matplotlib>=3.5.0
+For LRS3, the tree-structure of the directory is:
+
+```text
+LRS3  
+└─── labels
+     ├── lrs3_train_transcript.csv 
+     ├── lrs3_test_transcript.csv 
+     
+└─── lrs3
+     ├── lrs3_text_seg16s
+     │    └── ...
+     └── lrs3_video_seg16s
+          └── ...
 ```
 
----
+The label files in `[LRS3]/[labels]` and `[LRS2]/[labels]` undergo some processing to make them fit Omni-AVSR. For example, we lowercase the transcription and discard samples whose length is higher than a specific threshold to avoid training instability and peak GPU memory usage. Based on the desired training setting, the processed labels can be accessed below. Once downloaded, they must be moved to `[LRS3]/[labels]` or `[LRS2]/[labels]` subfolders. 
 
-## 🚀 Quick Start
-
-### Demo
-
-Run a quick demo with our pretrained model:
-
-```bash
-# Download pretrained model
-bash scripts/download_models.sh
-
-# Run inference on sample data
-python demo.py --input samples/input.jpg --output results/output.jpg --model checkpoints/model_best.pth
-```
-
-### Expected Output
-
-```
-Loading model from checkpoints/model_best.pth
-Processing input.jpg...
-✓ Result saved to results/output.jpg
-Inference time: 0.05s
-```
-
----
-
-## 📊 Dataset Preparation
-
-### Supported Datasets
-
-We support the following datasets:
-
-- **Dataset 1**: [Download Link](https://dataset1-url.com)
-- **Dataset 2**: [Download Link](https://dataset2-url.com)
-- **Dataset 3**: [Download Link](https://dataset3-url.com)
-
-### Data Structure
-
-Organize your data as follows:
-
-```
-data/
-├── dataset1/
-│   ├── train/
-│   │   ├── images/
-│   │   └── labels/
-│   ├── val/
-│   │   ├── images/
-│   │   └── labels/
-│   └── test/
-│       ├── images/
-│       └── labels/
-└── dataset2/
-    └── ...
-```
-
-### Preprocessing
-
-```bash
-# Preprocess the dataset
-python scripts/preprocess.py --dataset dataset1 --data_root data/dataset1
-```
+| Label Files | Dataset | Split| Hours |
+|-----|:-----:|:-----:|:-----:|
+|['lrs3_train_transcript.csv'](https://drive.google.com/file/d/1ahoVBZLl1j_LuAvplEWUdPpd4JpE5O8k/view?usp=drive_link)|LRS3|Train|433|
+|['lrs2_train_transcript.csv'](https://drive.google.com/file/d/120YJQmVSdRvNHT-5qq9O0ESrfuPN5WqU/view?usp=drive_link)|LRS2|Train|225|
+|['lrs3_test_transcript.csv'](https://drive.google.com/file/d/1DSeKQMUOJKNgE5wcvw91tc_CNsXgSa0l/view?usp=drive_link)|LRS3|Test|/|
+|['lrs2_test_transcript.csv'](https://drive.google.com/file/d/1aBQqnTvBIgDxEdnQ0TIrfUuKXrFtF_b4/view?usp=drive_link)|LRS2|Test|/|
 
 ---
 
 ## 🎓 Training
 
-### Train from Scratch
+### Preliminaries 
+Before starting the training process, make sure you **1)** have a wandb account to track your experiments and **2)** have access to the pre-trained LLMs like Llama 3.2-1B (i.e., you need to request access from HF [here](https://huggingface.co/meta-llama/Llama-3.2-1B)). You also have to download the AV-HuBERT Large model pretrained on LRS3 + VoxCeleb2, accessible [here](https://dl.fbaipublicfiles.com/avhubert/model/lrs3_vox/clean-pretrain/large_vox_iter5.pt).
 
-```bash
-# Single GPU training
-python train.py --config configs/default.yaml --gpu 0
+To set up the desired experiment to run, we have several main arguments to define, listed below:
+<details open>
+  <summary><strong>Main Arguments</strong></summary>
+    
+- `exp-dir`: Directory to save checkpoints and logs to.
+- `root-dir`: Root directory of the preprocessed datasets.
+- `wandb-project`: Name of the wandb project to track the results.
+- `exp-name`: Experiment name. Location of checkpoints is `[exp_dir]`/`[exp_name]`.
+- `modality`: The modality we use to train the methods. Choices: [`audio`, `video`, `audiovisual`].
+- `llm-model`: The LLM backbone to use (e.g., `meta-llama/Llama-3.2-1B`).
+- `compression-mode`: how to compress the audio and/or video tokens. Default: `avg-pooling`.
+- `num-nodes`: Number of machines used. Default: `1`.
+- `gpus`: Number of GPUs per machine. Default: `1`.
 
-# Multi-GPU training (4 GPUs)
-python -m torch.distributed.launch --nproc_per_node=4 train.py \
-    --config configs/default.yaml \
-    --distributed
-```
-
-### Configuration
-
-Edit `configs/default.yaml` to customize training parameters:
-
-```yaml
-# Model
-model:
-  type: YourModel
-  backbone: resnet50
-  num_classes: 10
-
-# Training
-train:
-  batch_size: 32
-  epochs: 100
-  lr: 0.001
-  optimizer: Adam
-  scheduler: CosineAnnealingLR
-
-# Data
-data:
-  dataset: dataset1
-  train_split: train
-  val_split: val
-  num_workers: 4
-```
-
-### Resume Training
-
-```bash
-python train.py --config configs/default.yaml --resume checkpoints/checkpoint_epoch_50.pth
-```
+</details>
 
 ---
 
@@ -335,7 +256,7 @@ If you find our work useful, please cite:
 
 ## 🙏 Acknowledgements
 
-- Code relies on [auto-avsr](https://github.com/mpc001/auto_avsr), [avhubert](https://github.com/facebookresearch/av_hubert), and [Llama-AVSR](https://github.com/umbertocappellazzo/Llama-AVSR) repositories
+- Our Code relies on [auto-avsr](https://github.com/mpc001/auto_avsr), [avhubert](https://github.com/facebookresearch/av_hubert), and [Llama-AVSR](https://github.com/umbertocappellazzo/Llama-AVSR) repositories
 - Built with [PyTorch](https://pytorch.org/)
 
 ---
