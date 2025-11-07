@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Omni-AVSR: Towards Unified Multimodal Speech Recognition with Large Language Models</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -246,6 +247,12 @@
             line-height: 1.8;
         }
 
+        ul {
+            margin-bottom: 1.2rem;
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
         /* Highlights */
         .highlights {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(240, 147, 251, 0.08) 100%);
@@ -393,6 +400,15 @@
         .figures-container.small-large {
             grid-template-columns: 0.85fr 1.15fr;
         }
+
+        .figures-container.small-large2 {
+            grid-template-columns: 0.75fr 1.25fr;
+        }
+
+        .figures-container.large-small {
+            grid-template-columns: 1.07fr 0.93fr;
+        }
+
 
         /* Inline figure */
         .figure-inline {
@@ -573,7 +589,7 @@
             <li><a href="#introduction" style="font-family:'Comic Sans MS'">Overview</a></li>
             <li><a href="#method" style="font-family:'Comic Sans MS'">Omni-AVSR Details</a></li>
             <li><a href="#results" style="font-family:'Comic Sans MS'">Main Results</a></li>
-            <li><a href="#results" style="font-family:'Comic Sans MS'">Ablation Studies</a></li>
+            <li><a href="#ablations" style="font-family:'Comic Sans MS'">Ablation Studies</a></li>
             <li><a href="#conclusion" style="font-family:'Comic Sans MS'">Conclusion</a></li>
             <li><a href="#citation" style="font-family:'Comic Sans MS'">Citation</a></li>
         </ul>
@@ -584,7 +600,7 @@
         <section id="abstract">
             <h2 style="font-family:'Comic Sans MS'">Abstract</h2>
             <p>
-                Large language models (LLMs) have recently achieved impressive results in speech recognition across multiple modalities, including Auditory Speech Recognition (ASR), Visual Speech Recognition (VSR), and Audio-Visual Speech Recognition (AVSR). Despite this progress, current LLM-based approaches typically address each task independently, training separate models that raise computational and deployment costs while missing potential cross-task synergies. They also rely on fixed-rate token compression, which restricts flexibility in balancing accuracy with efficiency. These limitations highlight the need for a unified framework that can support ASR, VSR, and AVSR while enabling elastic inference. To this end, we present Omni-AVSR, a unified audio-visual LLM that combines efficient multi-granularity training with parameter-efficient adaptation. Specifically, we adapt the matryoshka representation learning paradigm to efficiently train across multiple audio and visual granularities, reducing its inherent training cost. Furthermore, we explore three LoRA-based strategies for adapting the backbone LLM, balancing shared and task-specific specialization. Experiments on LRS2 and LRS3 show that Omni-AVSR achieves comparable or superior accuracy to state-of-the-art baselines while training a single model at substantially lower training and deployment costs. The model also remains robust under acoustic noise, and we analyze its scaling behavior as LLM size increases, providing insights into the trade-off between performance and efficiency.
+                Large language models (LLMs) have recently achieved impressive results in speech recognition across multiple modalities, including Auditory Speech Recognition (ASR), Visual Speech Recognition (VSR), and Audio-Visual Speech Recognition (AVSR). Despite this progress, current LLM-based approaches typically address each task independently, training separate models that raise computational and deployment resource use while missing potential cross-task synergies. They also rely on fixed-rate token compression, which restricts flexibility in balancing accuracy with efficiency. These limitations highlight the need for a unified framework that can support ASR, VSR, and AVSR while enabling elastic inference. To this end, we present Omni-AVSR, a unified audio-visual LLM that combines efficient multi-granularity training with parameter-efficient adaptation. Specifically, we adapt the matryoshka representation learning paradigm to efficiently train across multiple audio and visual granularities, reducing its inherent training resource use. Furthermore, we explore three LoRA-based strategies for adapting the backbone LLM, balancing shared and task-specific specialization. Experiments on LRS2 and LRS3 show that Omni-AVSR achieves comparable or superior accuracy to state-of-the-art baselines while training a single model at substantially lower training and deployment resource use. The model also remains robust under acoustic noise, and we analyze its scaling behavior as LLM size increases, providing insights into the trade-off between performance and efficiency.
             </p>
             <!--
             <div class="highlights">
@@ -602,7 +618,7 @@
             <h2 style="font-family:'Comic Sans MS'">Overview</h2>
 
             <div class="overview-cards">
-                <a href="#overview-section" class="overview-card">
+                <a href="#method" class="overview-card">
                     <h3 style="font-family:'Comic Sans MS'">OMNI-AVSR Details</h3>
                     <p>Learn about Omni-AVSR key components: efficient matryoshka traning and LoRA-based finetuning.</p>
                 </a>
@@ -610,7 +626,7 @@
                     <h3 style="font-family:'Comic Sans MS'">Main Results</h3>
                     <p>Omni-AVSR results against state-of-the-art methods on LRS2 and LRS3 datasets.</p>
                 </a>
-                <a href="#ablation-section" class="overview-card">
+                <a href="#ablations" class="overview-card">
                     <h3 style="font-family:'Comic Sans MS'">Ablation Studies</h3>
                     <p>Explore Omni-AVSR scaling behavior or the importance of each task in the training paradigm.</p>
                 </a>
@@ -622,60 +638,159 @@
         <section id="method">
             <h2 style="font-family:'Comic Sans MS'">Omni-AVSR Details</h2>
             <p>
-                Describe your methodology in detail. Walk readers through your approach step by step.
+                The goal of Omni-AVSR is to train a <b>single unified</b> LLM-based model capable of performing ASR, VSR, and AVSR. At the same time, it enables <i>flexible control of audio-visual granularity at inference</i> according to resource constraints. In this way, Omni-AVSR supports multiple modalities and granularities within a single set of weights, while reducing training and deployment costs and achieving performance on par with, or even surpassing, state-of-the-art models trained independently for specific tasks or granularities. <br>
+
+                Following prior audio-visual LLMs (e.g., <a href="https://arxiv.org/abs/2409.12319" target="_blank">Llama-AVSR</a>, <a href="https://arxiv.org/abs/2505.14336" target="_blank">Llama-SMoP</a>), Omni-AVSR comprises <b><mark style="background-color: #9ACD32;">pre-trained audio and video encoders</mark></b>,<b> <mark style="background-color: #B0C4DE;">projection layers</mark></b>, and an <b><mark style="background-color: #DCDCDC;">LLM backbone</mark></b> (see <b>Figure 1a</b>). In the next sections, we detail how Omni-AVSR is endowed with <b>1)</b> explicit control over audio-visual granularities during inference and <b>2)</b> the ability to jointly support ASR, VSR, and AVSR within a single model.
+                
             </p>
-            <h3>Overview</h3>
-            <p>
-                Provide a high-level overview of your method before diving into technical details.
-            </p>
-            
+
             <figure>
                 <img src="./images/Omni-AVSR_overview.png" alt="Method Overview">
-                <figcaption>Overview of <b>(a)</b> the proposed Omni-AVSR model and <b>(b)</b> its Omni-LoRA variants.</figcaption>
+                <figcaption><b>Figure 1</b>: Overview of <b>(a)</b> the proposed Omni-AVSR model and <b>(b)</b> its Omni-LoRA variants.</figcaption>
             </figure>
 
-            <h3>Technical Details</h3>
+            <h3 style="font-family:'Comic Sans MS'">Multi-Granularity via Efficient Matryoshka Training</h3>
             <p>
-                Break down the technical components of your method. Use subsections to organize different aspects.
+                Omni-AVSR introduces a multi-granularity training scheme that allows the model to flexibly trade off efficiency and accuracy during inference. Instead of relying on fixed audio-visual compression rates, Omni-AVSR builds on the <b>Matryoshka Representation Learning</b> (MRL) principle to support inference at multiple token granularities within a single unified model. <br> <br>
+
+                Given an input audio waveform \( \mathbf{a} \) and its corresponding lip-movement video \( \mathbf{v} \), the pre-trained encoders produce token sequences \( \mathbf{Z}^a \) and \( \mathbf{Z}^v \), respectively. During training, token sequences at varying granularities are generated by applying \( C_A \) audio compression rates {\(a_1, a_2,\cdots,a_{C_A} \)} and \( C_V \) video rates {\(v_1, v_2,\cdots,v_{C_V} \)}. <br>
+
+                Naïvely combining these rates would require \( C_A \) LLM forward/backward passes per batch for <i>ASR</i>, \( C_V \) for <i>VSR</i>, and \( C_A \cdot C_V \) for <i>AVSR</i>. <i>This would lead to prohibitive computational overhead and potential interference among multiple objectives</i>. <br> <br>
+
+                To overcome this limitation, we introduce a <b>key modification</b>: during training, we randomly select one audio rate \( a_i \) and one video rate \( v_j \) at each iteration, yielding compressed sequences \( \mathbf{Z}^{a_i} \) and \( \mathbf{Z}^{v_j} \). This reduces the number of forward/backward LLM passes to only three, one per task, instead of \( C_A + C_V + C_A \cdot C_V \). <br>
+
+                These compressed sequences are then passed through modality-specific projection layers and concatenated with task-specific text tokens \( X_t^{\text{P}} \), where \( t \in \{\mathsf{ASR}, \mathsf{VSR}, \mathsf{AVSR}\} \) and \(X^\text{P}_t\) encodes both the task prompt and the transcription. Therefore, we obtain: \(\mathbf{Z}_{\mathsf{ASR}} = [\mathbf{Z}^{a_i}, X^\text{P}_{\mathsf{ASR}}]\), \(\mathbf{Z}_{\mathsf{VSR}} = [\mathbf{Z}^{v_j}, X^\text{P}_{\mathsf{VSR}}]\), and \(\mathbf{Z}_{\mathsf{AVSR}} = [\mathbf{Z}^{a_i}, \mathbf{Z}^{v_j} , X^\text{P}_{\mathsf{AVSR}}]\). <i>This strategy preserves the flexibility of MRL at inference while substantially reducing its training cost</i>.
             </p>
-            <h3>Component A</h3>
+
+            <h3 style="font-family:'Comic Sans MS'">Joint ASR-VSR-AVSR Training Formulation</h3>
             <p>
-                Explain the first major component or stage of your method. Include mathematical formulations if relevant.
+                Omni-AVSR is trained by averaging the auto-regressive next token prediction loss for each task for each input data. For each task-specific sequence \(\mathbf{Z}_t\), the probability of the target \(\mathbf{Y}\) is computed by \(p(\mathbf{Y}|\mathbf{Z}_t) = \prod_{s=1}^{S}p_\theta(y_s|\mathbf{Z}_t, y_{< s})\), and the corresponding loss is defined as \(\mathcal{L}_t = - \log p(\mathbf{Y}|\mathbf{Z}_t)\), where \(y_{< s}\) is the generated output sequence up to token \(s-1\), \(\theta\) is the trainable parameters, and \(t \in \{\mathsf{ASR}, \mathsf{VSR}, \mathsf{AVSR}\}\). Overall, the final objective we train on is:
+
+                $$\mathcal{L}_{\text{OMNI}} = \lambda_{\mathsf{ASR}}\mathcal{L}_{\mathsf{ASR}} + \lambda_{\mathsf{VSR}}\mathcal{L}_{\mathsf{VSR}} + \lambda_{\mathsf{AVSR}}\mathcal{L}_{\mathsf{AVSR}},$$
+                where \(\lambda_{\mathsf{ASR}}\), \(\lambda_{\mathsf{VSR}}\), \(\lambda_{\mathsf{AVSR}}\) are task-specific weights.
             </p>
-            <h3>Component B</h3>
+
+            <h3 style="font-family:'Comic Sans MS'">Efficient LLM Adaptation via Omni-LoRA</h3>
             <p>
-                Explain the second major component. You can add as many components as needed.
+                In Omni-AVSR, the pre-trained LLM is kept frozen while low-rank LoRA modules are employed to parameter-efficiently fine-tune it. Given our multi-task setting, we explore three configurations: <b>1)</b> Omni-LoRA-<b>S</b>, <b>2)</b> Omni-LoRA-<b>T</b>, and <b>3)</b> Omni-LoRA-<b>ST</b>, illustrated in <b>Figure 1b</b>. <br>
+
+                <ul>
+                    <li>The Omni-LoRA-<b>S</b> variant employs a <i>single</i> <b>S</b>hared LoRA module to adapt the query and value projection matrices of each LLM self- attention layer across ASR, VSR, and AVSR tasks.</li>
+                    <li>The Omni-LoRA-<b>T</b> variant instead defines <i>separate</i> <b>T</b>ask-specific LoRA modules, each specialized to one specific task.</li>
+                    <li>Omni-LoRA-<b>ST</b> combines both <b>S</b>hared and <b>T</b>ask-specific LoRA modules, resulting in a hybrid approach of the previous variants.</li>
+                </ul>
+
+                <p>
+                During <b>training</b>, Omni-LoRA-T and Omni-LoRA-ST activate <i>all</i> task-specific modules. At <b>inference</b>, however, <i>only</i> the module corresponding to the selected task is used, ensuring efficiency.
+                </p>
+
             </p>
         </section>
 
-        <!-- Results Section -->
+        <!-- Main Results Section -->
         <section id="results">
-            <h2>Main Results</h2>
+            <h2 style="font-family:'Comic Sans MS'">Main Results</h2>
             <p>
-                Present your experimental results and findings. Include both qualitative and quantitative analysis.
+                We conduct experiments on <a href="https://arxiv.org/abs/1611.05358" target="_blank">LRS2</a> and <a href="https://arxiv.org/abs/1809.00496" target="_blank">LRS3</a> datasets. For a detailed description of these datasets, the pre-processing, the traning/inference details and more, please take a look at our paper.
             </p>
+
 
             <div class="figures-container small-large">
                 <figure>
                     <img src="./images/Main_table.png" alt="Method Figure 1">
-                    <figcaption>ASR, VSR, AVSR results in terms of WER (%) across audio and video compression rates.</figcaption>
+                    <figcaption><b>Table 1</b>: ASR, VSR, AVSR results in terms of WER (%) across different audio and video compression rates.</figcaption>
                 </figure>
                 <figure>
                     <img src="./images/Unified_comparison.png" alt="Method Figure 2">
-                    <figcaption>Comparison with state-of-the-art methods using a single model for ASR, VSR, and AVSR on LRS3.</figcaption>
+                    <figcaption><b>Table 2</b>: Comparison with state-of-the-art methods using a single model for ASR, VSR, and AVSR on LRS3.</figcaption>
+                </figure>
+            </div>
+
+            <h3 style="font-family:'Comic Sans MS'">Main ASR/VSR/AVSR Results on LRS2/LRS3</h3>
+
+            <p>
+                <b>Table 1</b> reports the ASR/VSR/AVSR results of our three Omni-AVSR variants on LRS2 and LRS3. On LRS2, the task- specific variant Omni-AVSR-T achieves the best performance, while on LRS3 all three variants yield comparable results. Compared with the baselines, we observe the following: <b>(1)</b> all Omni-AVSR variants consistently outperform Llama-AVSR, which requires a separate model per rate and task; <b>(2)</b> Omni-AVSR-T on LRS2, and all three variants on LRS3, match or surpass Llama-MTSK and Llama-MT; <b>(3)</b> task-wise, Omni-AVSR particularly benefits VSR; and <b>(4)</b> performance trends remain consistent across compression rates.
+            </p>
+
+            <h3 style="font-family:'Comic Sans MS'">Computational Cost Analysis</h3>
+
+            <p>
+                Beyond delivering strong recognition performance, Omni-AVSR
+                also offers significant computational advantages, as summarized in <b>Table 2</b>. <b>(1)</b> Omni-AVSR requires training only a <i>single</i> model, independent of the number of tasks \(T\) (ASR, VSR, and AVSR in our case, so \(T\) = 3) and the number of audio \(C_A\) and video \(C_V\) compression rates (\(C_A = C_V = 2\) in our setup). <b>(2)</b> In terms of the number of forward/backward passes required over the LLM, Omni-AVSR computes the loss only once per task, as it samples a single audio and video rate at each iteration, thus reducing the requirement to just T passes. Overall, Omni-AVSR <i>requires only a single model and substantially reduces overall training computations compared to all baselines</i>.
+            </p>
+
+            <h3 style="font-family:'Comic Sans MS'">Results under Acoustic Noise</h3>
+            
+            <p>
+                To evaluate the robustness of Omni-AVSR under noisy conditions, we inject babble noise at varying SNRs. As shown in <b>Table 3</b>, Omni-AVSR-ST consistently outperforms Llama-AVSR and Llama-MTSK, and remains competitive with Llama-MT across noise levels, often surpassing it at lower SNRs.
+            </p>
+
+            <h3 style="font-family:'Comic Sans MS'">Comparison with Other Multi-task Methods</h3>
+            
+            <p>
+                In <b>Table 4</b>, we compare Omni-AVSR-ST with three state-of- the-art methods that train a single model for ASR, VSR, and AVSR: <a href="https://arxiv.org/abs/2207.07036" target="_blank">u-HuBERT</a>, <a href="https://www.mdpi.com/2079-9292/14/12/2310" target="_blank">MultiAVSR</a>, and <a href="https://arxiv.org/abs/2411.02256" target="_blank">USR</a>. At the (4,2) compression setting, Omni-AVSR-ST achieves the best performance across all tasks while requiring significantly fewer parameters and surpassing u-HuBERT, despite the latter being trained on 1759 hours of data.
+            </p>
+
+
+            <div class="figures-container small-large2">
+                <figure>
+                    <img src="./images/Noise.png" alt="Method Figure 1">
+                    <figcaption><b>Table 3</b>: AVSR results on LRS3 across acoustic noise conditions.</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/Computation_cost.png" alt="Method Figure 2">
+                    <figcaption><b>Table 4</b>: Computational cost analysis. Here, <b>T</b> denotes the number of tasks, while \(\mathbf{C_A}/\mathbf{C_V}\) denotes the number of audio/video rates.</figcaption>
+                </figure>
+            </div>
+
+            
+        </section>
+
+
+        <!-- Ablation Results Section -->
+        <section id="ablations">
+            <h2 style="font-family:'Comic Sans MS'">Ablation Studies</h2>
+            
+            <h3 style="font-family:'Comic Sans MS'">Optimal Task-specific Weights</h3>
+
+            <figure class="figure-inline">
+                <img src="./images/Coefficients.png" alt="Description">
+                <figcaption><b>Table 5</b>: Ablation on the best values of ASR/VSR/AVSR weights.</figcaption>
+            </figure>
+
+            <p>In <b>Table 5</b>, we analyze the impact of varying the loss weight coefficients for each task on the LRS2 dataset. The best performance is given by \(\lambda_{\mathsf{ASR}} = \lambda_{\mathsf{AVSR}} = 1\) and \(\lambda_{\mathsf{VSR}} = 1.5\). Since VSR is the most challenging of the three tasks, assigning it a higher weight leads to improved overall results.</p>
+
+            <h3 style="font-family:'Comic Sans MS'">AVSR Comparison with Sota Methods</h3>
+            <p>
+                <b>Figure 2</b> presents a comparison of Omni-AVSR-ST with recent state-of-the-art approaches, whose details can be found in our paper. Omni-AVSR-ST (evaluated at audio-video rates of (4,2)) achieves competitive WERs while requiring substantially fewer parameters and training data hours than all baselines, within one consistent framework.
+            </p>
+
+            <h3 style="font-family:'Comic Sans MS'">LLM Scaling Trend</h3>
+            <p>
+                 We study how scaling the LLM impacts performance across ASR, VSR, and AVSR in <b>Figure 3</b>, using models of different sizes from the Llama and Qwen 2.5 families. As shown, performance improves with larger LLMs, with higher gains observed on more challenging tasks (e.g., VSR) or under higher compression (e.g., ASR at rate 16). However, larger models incur greater training computations, memory usage, and slower inference. <i>Overall, LLMs in the 1–3B parameter range represent a favorable trade-off between accuracy and efficiency</i>.
+            </p>
+
+
+        <div class="figures-container large-small">
+                <figure>
+                    <img src="./images/bubblechart.png" alt="Method Figure 1">
+                    <figcaption><b>Figure 2</b>: Comparison of Omni-AVSR-ST with state-of-the-art AVSR methods in terms of <i>WER</i>, <i>activated parameters</i>, and <i>training data hours</i> on LRS3.</figcaption>
+                </figure>
+                <figure>
+                    <img src="./images/scaling_LLM.png" alt="Method Figure 2">
+                    <figcaption><b>Figure 3</b>: <i>Scaling</i> trend of Omni-AVSR-ST when we increase the LLM size on LRS3.</figcaption>
                 </figure>
             </div>
 
 
-            <figure class="figure-inline">
-                <img src="./images/Coefficients.png" alt="Description">
-                <figcaption>Figure X: Your caption here.</figcaption>
-            </figure>
-            <p>Your text here will wrap around the figure on the right side...</p>
+        </section>
+
+
+
 
         <!-- Conclusion Section -->
         <section id="conclusion">
-            <h2>Conclusion</h2>
+            <h2 style="font-family:'Comic Sans MS'">Conclusion</h2>
             <p>
                 In this work, we introduce Omni-AVSR, the first unified audio-visual LLM that jointly supports ASR, VSR, and AVSR while enabling elastic inference under a single set of weights. By combining efficient matryoshka-based multi-granularity training with LoRA adaptation strategies, Omni-AVSR achieves strong performance while reducing training and deployment costs. Experiments on LRS2 and LRS3 show that Omni-AVSR matches or surpasses state-of-the-art baselines, remains robust in noisy conditions, and delivers favorable trade-offs when scaling LLM size. Furthermore, Omni-AVSR provides significant computational savings, requiring only one model and a reduced number of LLM passes during training.
             </p>
@@ -684,7 +799,7 @@
 
         <!-- Citation Section -->
         <section id="citation">
-            <h2>Citation</h2>
+            <h2 style="font-family:'Comic Sans MS'">Citation</h2>
             <p>If you find this work useful, please cite our paper using the following BibTeX entry:</p>
             <div class="citation-box">
                 <pre>@article{Omni-AVSR,
@@ -694,11 +809,12 @@
   year={2025},
 }</pre>
             </div>
+            Should you have any questions or would like to collaborate in advancing LLM-based audio-visual speech recognition or similar topics, feel free to touch base with me at umbertocappellazzo@gmail.com
         </section>
     </div>
 
     <footer>
-        <p>&copy; 2024 Your Name. | <a href="https://github.com">GitHub</a> | <a href="https://twitter.com">Twitter</a> | <a href="https://linkedin.com">LinkedIn</a></p>
+        <p>&copy; 2025 Umberto Cappellazzo. | <a href="https://github.com/umbertocappellazzo">GitHub</a> | <a href="https://x.com/Umberto_Senpai">Twitter</a> | <a href="https://www.linkedin.com/in/umberto-cappellazzo-116093150/">LinkedIn</a></p>
     </footer>
 </body>
 </html>
