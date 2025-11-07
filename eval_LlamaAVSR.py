@@ -99,12 +99,6 @@ def parse_args():
         type = str
     )
     parser.add_argument(
-        "--hidden-size",
-        default= None,
-        type=int,
-        help="Hidden size of the LLM.",
-    )
-    parser.add_argument(
         "--intermediate-size",
         default= 2048,
         type=int,

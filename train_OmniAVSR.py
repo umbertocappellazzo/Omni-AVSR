@@ -123,15 +123,8 @@ def parse_args():
         default= None,
         type=str,
         help="LLM model name.",
-        choices= ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", "meta-llama/Llama-2-7b-hf",
-                  "meta-llama/Meta-Llama-3-8B", "meta-llama/Meta-Llama-3.1-8B", "meta-llama/Llama-3.2-1B","meta-llama/Llama-3.2-3B",
+        choices= ["meta-llama/Meta-Llama-3.1-8B", "meta-llama/Llama-3.2-1B","meta-llama/Llama-3.2-3B",
                   "Qwen/Qwen2.5-0.5B", "Qwen/Qwen2.5-1.5B", "Qwen/Qwen2.5-3B", "Qwen/Qwen2.5-7B", "Qwen/Qwen2.5-14B", "Qwen/Qwen2.5-32B"]
-    )
-    parser.add_argument(
-        "--hidden-size",
-        default= None, #2048 3072 3584 4096 5120
-        type=int,
-        help="Hidden size of the LLM.",
     )
     parser.add_argument(
         "--intermediate-size",

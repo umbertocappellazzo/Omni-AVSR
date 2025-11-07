@@ -93,7 +93,7 @@ def parse_args():
     )
     parser.add_argument(
         "--pretrain-avhubert-enc-video-path",
-        default= None, #"/cappellazzo/AV_ASR/autoavsr_v1.1/results/large_vox_iter5.pt", "/cappellazzo/avsr_llm/src/ckpt_pretrained/large_vox_iter5.pt"
+        default= None, 
         type=str,                                                               
     )
     parser.add_argument(
@@ -112,12 +112,6 @@ def parse_args():
         "--audio-encoder-name",
         default = None,
         type = str
-    )
-    parser.add_argument(
-        "--hidden-size",
-        default= None,
-        type=int,
-        help="Hidden size of the LLM.",
     )
     parser.add_argument(
         "--intermediate-size",
@@ -171,14 +165,14 @@ def parse_args():
     parser.add_argument(
         "--downsample-ratio-audio",
         nargs="*",
-        default=3,  #[1,2,3,4,5]
+        default=3,
         type=int,
         help="Downsample audio ratio.",
     )
     parser.add_argument(
         "--downsample-ratio-video",
         nargs="*",
-        default=3,  #[1,2,3,4,5]
+        default=3,
         type=int,
         help="Downsample video ratio.",
     )

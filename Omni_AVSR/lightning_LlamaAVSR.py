@@ -25,6 +25,17 @@ VIDEO_SOS = "<video>"
 VIDEO_EOS = "</video>"
 
 
+llm_size = {"meta-llama/Meta-Llama-3.1-8B": 4096,
+            "meta-llama/Llama-3.2-1B": 2048,
+            "meta-llama/Llama-3.2-3B": 3072,
+            "Qwen/Qwen2.5-0.5B": 896,
+            "Qwen/Qwen2.5-1.5B": 1536,
+            "Qwen/Qwen2.5-3B": 2048,
+            "Qwen/Qwen2.5-7B": 3584,
+            "Qwen/Qwen2.5-14B": 5120,
+            "Qwen/Qwen2.5-32B": 5120,
+            }
+
 def compute_word_level_distance(seq1, seq2):
     seq1, seq2 = seq1.lower().split(), seq2.lower().split()
     return torchaudio.functional.edit_distance(seq1, seq2)
@@ -108,7 +119,7 @@ class ModelModule_LLM(LightningModule):
                                    pretrain_avhubert_enc_video = args.pretrain_avhubert_enc_video_path, 
                                    use_lora_avhubert= args.use_lora_avhubert,
                                    llm_model = args.llm_model, 
-                                   hidden_size = args.hidden_size, 
+                                   hidden_size = llm_size[args.llm_model], 
                                    intermediate_size= args.intermediate_size, 
                                    tokenizer = self.tokenizer, 
                                    prompt = prompt, 
