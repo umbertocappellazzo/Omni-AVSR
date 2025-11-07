@@ -9,7 +9,7 @@
 
 **[Umberto Cappellazzo¹](#) · [Xubo Liu²](#) · [Pingchuan Ma¹](#) · [Stavros Petridis¹](#) · [Maja Pantic¹](#)**
 
-¹Imperial College London · ²University of Surrey
+¹Imperial College London ²University of Surrey
 
 ### 📄 [`Paper`](https://arxiv.org/abs/your-paper-id) | 🌐 [`Project Page`](https://github.com/umbertocappellazzo/Omni-AVSR) | 💻 [`Code`](https://github.com/umbertocappellazzo/Omni-AVSR) | 🔖 [`BibTeX`](#-citation)
 
@@ -19,7 +19,6 @@
 
 ## 📢 News
 
-- **[2024-12]** 🎉 Paper accepted at [Conference Name] 2024!
 - **[2024-11]** 🚀 Code and models released!
 - **[2024-10]** 📝 Paper submitted to arXiv.
 
@@ -28,15 +27,15 @@
 ## 🌟 Highlights
 
 <div align="center">
-  <img src="assets/teaser.png" alt="Teaser" width="800"/>
+  <img src="assets/results.png" alt="Teaser" width="800"/>
   <p><i>Figure 1: Overview of our method and main results.</i></p>
 </div>
 
 ✨ **Key Contributions:**
-- 🔥 **First Key Point**: Brief description of your first major contribution
-- 🎯 **Second Key Point**: Brief description of your second major contribution  
-- 🚀 **Third Key Point**: Brief description of your third major contribution
-- 💡 **Fourth Key Point**: Brief description of your fourth major contribution
+- We present **Omni-AVSR**, the first audio-visual LLM that supports ASR, VSR, and AVSR jointly while enabling elastic inference under a single set of weights.
+- Omni-AVSR hinges upon an optimized *matryoshka*-based framework to support efficient multi-granularity training.
+- To adapt the backbone LLM to all tasks in a parameter-efficient manner, Omni-AVSR uses three ad-hoc *LoRA*-based methods.
+- Omni-AVSR achieves SoTA results on LRS2 and LRS3 benchmarks, whilst substantially reducing training and deployment costs.
 
 ---
 
@@ -59,7 +58,7 @@
 
 ## 📝 Abstract
 
-> Your paper abstract goes here. Provide a concise summary of the problem, your approach, and the key findings. Make it compelling and informative so readers understand the contribution of your work at a glance. This should be 3-5 sentences that capture the essence of your research.
+> **Omni-AVSR** is a unified multimodal large language model designed to perform auditory (ASR), visual (VSR), and audio-visual (AVSR) speech recognition within a single framework. It integrates **efficient Matryoshka-based multi-granularity training**, enabling flexible control of token compression rates for elastic inference across modalities. To adapt the LLM efficiently, Omni-AVSR introduces **Omni-LoRA**, offering shared, task-specific, and hybrid fine-tuning strategies. Experiments on LRS2 and LRS3 show that Omni-AVSR matches or surpasses state-of-the-art results while drastically reducing training and deployment costs.
 
 ---
 
@@ -68,8 +67,8 @@
 ### Architecture
 
 <div align="center">
-  <img src="assets/architecture.png" alt="Architecture" width="800"/>
-  <p><i>Figure 2: Overall architecture of the proposed method.</i></p>
+  <img src="assets/pipeline.png" alt="Architecture" width="800"/>
+  <p><i>Figure 2: Overall architecture of our proposed Omni-AVSR method.</i></p>
 </div>
 
 Our method consists of three main components:
@@ -308,7 +307,7 @@ Place downloaded models in `checkpoints/` directory.
 
 ---
 
-## 📚 Citation
+## 🔖 Citation
 
 If you find our work useful, please cite:
 
@@ -325,16 +324,8 @@ If you find our work useful, please cite:
 
 ## 🙏 Acknowledgements
 
-- We thank [Person/Group] for [contribution]
-- This work was supported by [Funding Source]
-- Code is inspired by [Related Work](https://github.com/related-work)
+- Code relies on [auto-avsr](https://github.com/mpc001/auto_avsr), [avhubert](https://github.com/facebookresearch/av_hubert), and [Llama-AVSR](https://github.com/umbertocappellazzo/Llama-AVSR) repositories
 - Built with [PyTorch](https://pytorch.org/)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -342,8 +333,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions and discussions, please:
 - Open an issue on GitHub
-- Email: your.email@university.edu
-- Visit our [project page](https://your-website-url.com)
+- Email: umbertocappellazzo@gmail.com
+- Visit our [project page](https://github.com/umbertocappellazzo/Omni-AVSR) and our [preprint]()
 
 ---
 
