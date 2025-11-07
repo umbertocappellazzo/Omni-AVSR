@@ -165,13 +165,126 @@ To set up the desired experiment to run, we have several main arguments to defin
 - `exp-name`: Experiment name. Location of checkpoints is `[exp_dir]`/`[exp_name]`.
 - `modality`: The modality we use to train the methods. Choices: [`audio`, `video`, `audiovisual`].
 - `llm-model`: The LLM backbone to use (e.g., `meta-llama/Llama-3.2-1B`).
-- `compression-mode`: how to compress the audio and/or video tokens. Default: `avg-pooling`.
+- `compression-mode`: How to compress the audio and/or video tokens. Default: `avg-pooling`.
 - `num-nodes`: Number of machines used. Default: `1`.
 - `gpus`: Number of GPUs per machine. Default: `1`.
+- `is-matryoshka`: Whether to use matryoshka representation learning.
+- `auto-test`: Whether to run the evaluation stage right after the traning process is completed. Default: `True`.
+- `is-task-specific`: True if we use a LoRA module for each tasks. This is set to True for *Omni-AVSR-T* and *Omni-AVSR-ST*.
+- `use-shared-lora-task-specific`: True if we use a shared LoRA module. This is set to True for *Omni-AVSR-ST.
+- `matry-weights`: The weight for the ASR/VSR/AVSR tasks (see Eq. 1 in our paper). Default: `[1,1,1]`.
+
+</details>
+
+There are **additional arguments** to define, which are mainly modality-specific. More details below.
+
+<details>
+  <summary><strong>Additional Arguments</strong></summary>
+    
+- `prompt-audio`: This is the prompt used for the ASR task. By default, this is set to `Transcribe speech to text.`. Likewise, we define the prompt for the VSR task (`prompt-video`) and AVSR task (`prompt-audiovisual`).
+- `pretrain-avhubert-enc-video-path`: This is the path to the pre-trained AV-HuBERT video encoder.
+- `audio-encoder-name`: The pre-trained audio encoder. Choices: [`openai/whisper-medium.en`, `microsoft/wavlm-large`, `av-hubert`].
+- `unfrozen_modules`: The modules to unfroze before starting the training. This can be the LoRA modules of the LLM (`peft_llm`) or the LoRA modules of the video encoder (`lora_avhubert`). 
+- `add_PETF_LLM`: Whether to fine-tune the LLM via LoRA. Set to `lora` if we use LoRA, else `None`.
+- `reduction_lora` and `alpha`: if we fine-tune the LLM via LoRA, we need to define the factor by which we reduce the hidden size (`reduction_lora`) and the scaling factor (`alpha`). 
+- `max-epochs`: Number of epochs to train Llama-AVSR.
+- `num-average-epochs`: We average the last `num-average-epochs` ckpts. Default: `4`.
+- `downsample-ratio-audio`: This argument defines the compression rate to apply to the audio tokens before the LLM. Likewise, we define the compression rate for the video tokens (`downsample-ratio-video`).
+- `max-frames-audio`: Max number of audio frames in a batch. This number can be adjusted based on the own GPU memory. For video and audio-visual we define a similar value.  
+- `lr`: The learning rate of the AdamW optimizer. For ASR and AVSR, we set it to `1e-3`, for VSR to `5e-4`.
+- `weight-decay`: The weight decay of the optimizer. Default: `0.1`.
+- `rank`: The rank of each LoRA module.
 
 </details>
 
 ---
+
+### Baselines
+
+**Example 1: Llama-AVSR**
+If you want to reproduce the results obtained by **Llama-AVSR**, we need to ru  the `train_LlamaAVSR.py` script. Suppose we want to train Llama-AVSR for the ASR task with an audio compression rate of 16:
+
+
+```Shell
+python train_LlamaAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
+--exp-name LRS3_audio_avg-pooling_Whisper-M_Llama3.2-1B_pool-16_LN_seed7 --modality audio --compression-mode avg-pooling \
+--audio-encoder-name openai/whisper-medium.en --rank 32 --alpha 4 --llm-model meta-llama/Llama-3.2-1B \
+--unfrozen-modules peft_llm --add-PETF-LLM lora --downsample-ratio-audio 16 --lr 1e-3 --max-frames-audio 1500 --gpus 2 \
+--max-epochs 8 --num-average-epochs 1 --num-check-save 1 --train-file lrs3_train_transcript.csv \
+--val-file lrs3_test_transcript.csv --test-file lrs3_test_transcript.csv
+```
+
+**Example 2: Llama-MTSK**
+
+If you want to reproduce the results obtained by **Llama-MTSK**, we need to ru  the `train_LlamaAVSR.py` script. Suppose we want to train Llama-MTSK for the AVSR task with an audio compression rates [4,16] and video compression rates [2,5]:
+
+```Shell
+python train_LlamaAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
+--exp-name LRS3_video_Matry_avg-pool_AVH-L_Llama3.2-1B_pool-2-5_LN_seed42 --is-matryoshka True -modality audiovisual \
+--compression-mode avg-pooling --pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt \
+--audio-encoder-name openai/whisper-medium.en --rank 32 --alpha 4 --llm-model meta-llama/Llama-3.2-1B \
+--unfrozen-modules peft_llm --add-PETF-LLM lora --downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 \
+--lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 --num-average-epochs 1 --num-check-save 1 \
+--train-file lrs3_train_transcript.csv \ --val-file lrs3_test_transcript.csv --test-file lrs3_test_transcript.csv
+```
+
+**Example 3: Llama-MT**
+If you want to reproduce the results obtained by **Llama-MT**, we need to ru  the `train_OmniAVSR.py` script. Suppose we want to train Llama-MT with an audio compression rates of 4 and video compression rate of 2:
+
+```Shell
+python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
+--exp-name LRS3_OmniAVSR_weights_1-15-1_avgpooling_Whisper-M_Llama3.2-1B_LoRA_pool-16-5_LN_seed7 \
+--modality audiovisual --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en \
+--pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt --rank 32 --alpha 4 --llm-model meta-llama/Llama-3.2-1B \
+--unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora --downsample-ratio-audio 4 \
+--downsample-ratio-video 2 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 --num-average-epochs 1 \
+--num-check-save 1 --matry-weights 1. 1.5 1. --is-single-matry-projector True
+--train-file lrs3_train_transcript.csv \ --val-file lrs3_test_transcript.csv --test-file lrs3_test_transcript.csv
+```
+
+### Omni-AVSR
+
+**Example 1: Omni-AVSR-S**
+
+```Shell
+python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
+--exp-name LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_pool-audio4-16_video2-5_LN_seed7/
+--modality audiovisual --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en --matry-weights 1. 1.5 1. \
+--is-matryoshka True --pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt --rank 32 --alpha 4 \
+--llm-model meta-llama/Llama-3.2-1B --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
+--downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 \
+--num-average-epochs 1 --num-check-save 1 --train-file lrs3_train_transcript.csv \
+--val-file lrs3_test_transcript.csv --test-file lrs3_test_transcript.csv
+```
+
+**Example 2: Omni-AVSR-T**
+
+```Shell
+python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
+--exp-name LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_task-specific_pool-audio4-16_video2-5_LN_seed7/
+--modality audiovisual --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en --matry-weights 1. 1.5 1. --is-task-specific True\
+--is-matryoshka True --pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt --rank 32 --alpha 4 \
+--llm-model meta-llama/Llama-3.2-1B --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
+--downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 \
+--num-average-epochs 1 --num-check-save 1 --train-file lrs3_train_transcript.csv \
+--val-file lrs3_test_transcript.csv --test-file lrs3_test_transcript.csv
+```
+
+**Example 3: Omni-AVSR-ST**
+
+```Shell
+python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
+--exp-name LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_task-specific_sharedLoRA_pool-audio4-16_video2-5_LN_seed7/
+--modality audiovisual --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en --matry-weights 1. 1.5 1. \
+--is-task-specific True --use-shared-lora-task-specific True\
+--is-matryoshka True --pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt --rank 32 --alpha 4 \
+--llm-model meta-llama/Llama-3.2-1B --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
+--downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 \
+--num-average-epochs 1 --num-check-save 1 --train-file lrs3_train_transcript.csv \
+--val-file lrs3_test_transcript.csv --test-file lrs3_test_transcript.csv
+```
+
+
 
 ## 📈 Evaluation
 
