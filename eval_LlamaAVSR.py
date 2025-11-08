@@ -149,15 +149,23 @@ def parse_args():
     )
     parser.add_argument(
         "--downsample-ratio-audio",
+        nargs="*",
         default=3,
         type=int,
-        help="Downsample audio ratio.",
+        help="Downsample ratio for audio.",
     )
     parser.add_argument(
         "--downsample-ratio-video",
+        nargs="*",
         default=3,
         type=int,
-        help="Downsample video ratio.",
+        help="Downsample ratio for video.",
+    )
+    parser.add_argument(
+        "--downsample-ratio-test-matry",
+        default=None,
+        type=int,
+        help="Downsample ratio.",
     )
     parser.add_argument(
         "--max-dec-tokens",
@@ -206,24 +214,53 @@ def init_logger(debug):
 def cli_main():
     args = parse_args()
     init_logger(args.debug)
-            
+    
+    if not args.is_matryoshka:
+        if type(args.downsample_ratio_audio) == list:
+            args.downsample_ratio_audio = args.downsample_ratio_audio[0]
+        if type(args.downsample_ratio_video) == list:
+            args.downsample_ratio_video = args.downsample_ratio_video[0]
+
     modelmodule = ModelModule_LLM(args)
     datamodule = DataModule_LLM(args, modelmodule.tokenizer, train_num_buckets=args.train_num_buckets)
     trainer = get_trainer(args)
     
-    if args.modality == "audio":
-        print("First evaluation round, ASR!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
-    elif args.modality == "video":
-        print("First evaluation round, VSR!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
-        print("Second evaluation round, VSR!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
-        print("Third evaluation round, VSR!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
+    if args.is_matryoshka:
+        if args.modality == "audio":
+            for rate_audio in args.downsample_ratio_audio:
+                args.downsample_ratio_test_matry = rate_audio
+                print("First evaluation round, rate: ", rate_audio)
+                trainer.test(model=modelmodule, datamodule=datamodule)
+        elif args.modality == "video":
+            for rate_video in args.downsample_ratio_video:
+                args.downsample_ratio_test_matry = rate_video
+                print("First evaluation round, rate: ", rate_video)
+                trainer.test(model=modelmodule, datamodule=datamodule)
+                print("Second evaluation round, rate: ", rate_video)
+                trainer.test(model=modelmodule, datamodule=datamodule)
+                print("Third evaluation round, rate: ", rate_video)
+                trainer.test(model=modelmodule, datamodule=datamodule)
+        else:
+            for rate_video in args.downsample_ratio_video:
+                for rate_audio in args.downsample_ratio_audio:
+                    args.downsample_ratio_test_matry = [rate_video, rate_audio]
+                    print(f"First evaluation round: audio rate {rate_audio}, video_rate {rate_video}.")
+                    trainer.test(model=modelmodule, datamodule=datamodule)
+            
     else:
-        print("First evaluation round, AVSR!")
-        trainer.test(model=modelmodule, datamodule=datamodule)
+        if args.modality == "audio":
+            print("First evaluation round, ASR!")
+            trainer.test(model=modelmodule, datamodule=datamodule)
+        elif args.modality == "video":
+            print("First evaluation round, VSR!")
+            trainer.test(model=modelmodule, datamodule=datamodule)
+            print("Second evaluation round, VSR!")
+            trainer.test(model=modelmodule, datamodule=datamodule)
+            print("Third evaluation round, VSR!")
+            trainer.test(model=modelmodule, datamodule=datamodule)
+        else:
+            print("First evaluation round, AVSR!")
+            trainer.test(model=modelmodule, datamodule=datamodule)
 
 
 if __name__ == "__main__":
