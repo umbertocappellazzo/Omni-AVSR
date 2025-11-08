@@ -49,7 +49,7 @@
 - [Checkpoints](#-checkpoints)
 - [Citation](#-citation)
 - [Acknowledgements](#-acknowledgements)
-- [License](#-license)
+- [Contact](#-contact)
 
 ---
 
