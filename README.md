@@ -28,7 +28,7 @@
 
 <div align="center">
   <img src="assets/pipeline.png" alt="Architecture" width="800"/>
-  <p><i>Figure 2: Overall architecture of our proposed Omni-AVSR method.</i></p>
+  <p><i>Figure 1: Overall architecture of our proposed Omni-AVSR method.</i></p>
 </div>
 
 ✨ **Key Contributions:**
@@ -88,11 +88,11 @@
     <tr>
       <td align="center" width="50%">
         <img src="assets/results.png" alt="Architecture" width="380"/>
-        <p><i>Figure 4: Comparison with SoTA methods for AVSR on LRS3.</i></p>
+        <p><i>Figure 2: Comparison with SoTA methods for AVSR on LRS3.</i></p>
       </td>
       <td align="center" width="50%">
         <img src="assets/scaling_LLM.png" alt="Omni-LoRA Variants" width="330"/>
-        <p><i>Figure 5: Scaling trend of Omni-AVSR-ST when we increase the LLM size on LRS3..</i></p>
+        <p><i>Figure 3: Scaling trend of Omni-AVSR-ST when we increase the LLM size on LRS3..</i></p>
       </td>
     </tr>
   </table>
