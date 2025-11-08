@@ -43,13 +43,10 @@
 
 - [Abstract](#-abstract)
 - [Main Results](#-main-results)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Dataset Preparation](#-dataset-preparation)
+- [Setup](#-setup)
 - [Training](#-training)
 - [Evaluation](#-evaluation)
-- [Results](#-results)
-- [Pretrained Models](#-pretrained-models)
+- [Checkpoints](#-checkpoints)
 - [Citation](#-citation)
 - [Acknowledgements](#-acknowledgements)
 - [License](#-license)
@@ -103,7 +100,7 @@
 
 ---
 
-## Setup 🛠 
+## 🛠 Setup 
 Our setup follows that of [Llama-AVSR](https://github.com/umbertocappellazzo/Llama-AVSR).
 
 ### 1) Installation
@@ -201,6 +198,8 @@ There are **additional arguments** to define, which are mainly modality-specific
 
 ### Baselines
 
+All the reported traning and evaluation commands pertains the LRS3 dataset. For the LRS2, you only need to update the train/eval/test labels files accordingly.
+
 **Example 1: Llama-AVSR**
 If you want to reproduce the results obtained by **Llama-AVSR**, we need to ru  the `train_LlamaAVSR.py` script. Suppose we want to train Llama-AVSR for the ASR task with an audio compression rate of 16:
 
@@ -220,8 +219,8 @@ If you want to reproduce the results obtained by **Llama-MTSK**, we need to ru  
 
 ```Shell
 python train_LlamaAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
---exp-name LRS3_video_Matry_avg-pool_AVH-L_Llama3.2-1B_pool-2-5_LN_seed42 --is-matryoshka True -modality audiovisual \
---compression-mode avg-pooling --pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt \
+--exp-name LRS3_audiovisual_Matry_avg-pool_AVH-L__Whisper-MLlama3.2-1B_pool-2-5_LN_seed42 --is-matryoshka True -modality audiovisual \
+--compression-mode avg-pooling --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt \
 --audio-encoder-name openai/whisper-medium.en --rank 32 --alpha 4 --llm-model meta-llama/Llama-3.2-1B \
 --unfrozen-modules peft_llm --add-PETF-LLM lora --downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 \
 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 --num-average-epochs 1 --num-check-save 1 \
@@ -235,7 +234,7 @@ If you want to reproduce the results obtained by **Llama-MT**, we need to ru  th
 python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
 --exp-name LRS3_OmniAVSR_weights_1-15-1_avgpooling_Whisper-M_Llama3.2-1B_LoRA_pool-16-5_LN_seed7 \
 --modality audiovisual --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en \
---pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt --rank 32 --alpha 4 --llm-model meta-llama/Llama-3.2-1B \
+--pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --rank 32 --alpha 4 --llm-model meta-llama/Llama-3.2-1B \
 --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora --downsample-ratio-audio 4 \
 --downsample-ratio-video 2 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 --num-average-epochs 1 \
 --num-check-save 1 --matry-weights 1. 1.5 1. --is-single-matry-projector True
@@ -250,7 +249,7 @@ python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_r
 python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
 --exp-name LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_pool-audio4-16_video2-5_LN_seed7/
 --modality audiovisual --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en --matry-weights 1. 1.5 1. \
---is-matryoshka True --pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt --rank 32 --alpha 4 \
+--is-matryoshka True --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --rank 32 --alpha 4 \
 --llm-model meta-llama/Llama-3.2-1B --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
 --downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 \
 --num-average-epochs 1 --num-check-save 1 --train-file lrs3_train_transcript.csv \
@@ -263,7 +262,7 @@ python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_r
 python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_root_dir --seed 7 \ 
 --exp-name LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_task-specific_pool-audio4-16_video2-5_LN_seed7/
 --modality audiovisual --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en --matry-weights 1. 1.5 1. --is-task-specific True\
---is-matryoshka True --pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt --rank 32 --alpha 4 \
+--is-matryoshka True --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --rank 32 --alpha 4 \
 --llm-model meta-llama/Llama-3.2-1B --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
 --downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 \
 --num-average-epochs 1 --num-check-save 1 --train-file lrs3_train_transcript.csv \
@@ -277,7 +276,7 @@ python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_r
 --exp-name LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_task-specific_sharedLoRA_pool-audio4-16_video2-5_LN_seed7/
 --modality audiovisual --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en --matry-weights 1. 1.5 1. \
 --is-task-specific True --use-shared-lora-task-specific True\
---is-matryoshka True --pretrain-avhubert-enc-video-path /ucappell/large_vox_iter5.pt --rank 32 --alpha 4 \
+--is-matryoshka True --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --rank 32 --alpha 4 \
 --llm-model meta-llama/Llama-3.2-1B --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
 --downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --lr 1e-3 --max-frames-audiovisual 1500 --gpus 2 --max-epochs 8 \
 --num-average-epochs 1 --num-check-save 1 --train-file lrs3_train_transcript.csv \
@@ -288,67 +287,38 @@ python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_r
 
 ## 📈 Evaluation
 
-### Evaluate on Test Set
+To test a trained model, either you set `--auto-test True` when starting a new training experiment, so the inference is performed automatically at the end of the traning, or you can run `eval_Llama-AVSR.py` for Llama-AVSR and Llama-MTSK or `eval_Omni-AVSR.py` for Llama-MT and Omni-AVSR. In both cases, a handful of inference arguments must be specified as follows:
 
-```bash
-# Evaluate with pretrained model
-python evaluate.py \
-    --config configs/default.yaml \
-    --checkpoint checkpoints/model_best.pth \
-    --split test
+<details open>
+  <summary><strong>Inference Arguments</strong></summary>
+    
+- `max-dec-tokens`: Maximum number of tokens that can be generated by the LLM. Default: `32`.
+- `num-beams`: Number of beams for beam search decoding. Default: `15`.
+- `decode-snr-target`: Level of signal-to-noise ratio (SNR). Default: `999999` (i.e., clean setting).
+
+</details>
+
+If you want to run an inference experiment, you need to define the argument `--pretrained-model-path` and set it to the path to the pre-trained ckpt. Furthermore, you need to specify the same arguments used for the training. Below one example for the Omni-AVSR-ST that test the pre-trained ckpt provided. 
+
+```Shell
+python eval_OmniAVSR.py --exp-name Omni_AVSR-ST_inference --pretrained-model-path path_to_ckpt --root-dir path_to_root_dir --modality audiovisual \
+--compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt \
+--llm-model meta-llama/Llama-3.2-1B --hidden-size 2048 --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
+--rank 32 --alpha 4 --downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --matry-weights 1. 1.5 1. --is-matryoshka True --is-task-specific True \
+--use-shared-lora-task-specific True --test-file lrs3_test_transcript.csv --num-beams 15 --max-dec-tokens 32 --decode-snr-target 999999
 ```
 
-### Metrics
-
-Our evaluation includes:
-
-- **Metric 1**: Description
-- **Metric 2**: Description  
-- **Metric 3**: Description
-
 ---
 
-## 🏆 Results
+## 🎁 Checkpoints
 
-### Main Results
+We provide below three checkpoints, all of them use Llama 3.2-1B and ASR/VSR/AVSR weights = [1.0,1.5,1.0]. If you want to experiment with other checkpoint, please contact me.
 
-Performance on [Dataset Name] test set:
-
-| Method | Metric 1 | Metric 2 | Metric 3 | Params (M) |
-|--------|----------|----------|----------|------------|
-| Baseline A | 75.2 | 0.85 | 2.1s | 25.5 |
-| Baseline B | 78.5 | 0.88 | 1.8s | 32.1 |
-| **Ours** | **85.3** | **0.92** | **1.5s** | **28.3** |
-
-### Qualitative Results
-
-<div align="center">
-  <img src="assets/results_comparison.png" alt="Results" width="800"/>
-  <p><i>Figure 3: Qualitative comparison with baseline methods.</i></p>
-</div>
-
-### Ablation Studies
-
-| Component | Metric 1 | Metric 2 |
-|-----------|----------|----------|
-| Baseline | 75.2 | 0.85 |
-| + Component A | 80.1 | 0.89 |
-| + Component B | 83.5 | 0.91 |
-| + Component C (Full) | **85.3** | **0.92** |
-
----
-
-## 🎁 Pretrained Models
-
-Download our pretrained models:
-
-| Model | Dataset | Performance | Download |
-|-------|---------|-------------|----------|
-| Model-Base | Dataset1 | 85.3% | [Link](https://drive.google.com/your-link) |
-| Model-Large | Dataset1 | 87.1% | [Link](https://drive.google.com/your-link) |
-| Model-Base | Dataset2 | 82.5% | [Link](https://drive.google.com/your-link) |
-
-Place downloaded models in `checkpoints/` directory.
+| Model | Dataset | Link |
+|-------|---------|----|
+| LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_pool-audio4-16_video2-5_LN_seed7 | LRS3 | [Link](https://www.doc.ic.ac.uk/~ucappell/) |
+| LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_task-specific_pool-audio4-16_video2-5_LN_seed7 | LRS3| [Link](https://www.doc.ic.ac.uk/~ucappell/) |
+| LRS3_OmniAVSR_Matry_weights_1-15-1_avg-pooling_Whisper-M_Llama3.2-1B_LoRA_task-specific_sharedLoRA_pool-audio4-16_video2-5_LN_seed7 | LRS3| [Link](https://www.doc.ic.ac.uk/~ucappell/) |
 
 ---
 
