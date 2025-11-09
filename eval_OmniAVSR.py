@@ -13,7 +13,7 @@ from datamodule.data_module import DataModule_LLM
 from Omni_AVSR.lightning_OmniAVSR import ModelModule_LLM
 
 from pytorch_lightning import Trainer
-from Omni_AVSR.pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.loggers import WandbLogger
 
 def get_trainer(args):
     return Trainer(precision='bf16-true',
