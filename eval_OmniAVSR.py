@@ -177,6 +177,19 @@ def parse_args():
         help="Downsample video ratio.",
     )
     parser.add_argument(
+        "--test-specific-ratio",
+        default = False,
+        type = bool,
+        help= "Whether to test Omni-AVSR on a specific audio and video compresison rate."
+        )
+    parser.add_argument(
+        "--test-specific-modality",
+        default = False,
+        type = bool,
+        choices = ["audio", "video", "audiovisual"],
+        help= "Whether to test Omni-AVSR on a specific task."
+        )
+    parser.add_argument(
         "--downsample-ratio-test-matry-audio",
         default=None,
         type=int,
@@ -187,6 +200,12 @@ def parse_args():
         default=None,
         type=int,
         help="Downsample visual ratio for eval.",
+    )
+    parser.add_argument(
+        "--task-to-test",
+        default=None,
+        type=str,
+        help="Task to evaluate Omni-AVSR on.",
     )
     parser.add_argument(
         "--max-dec-tokens",
@@ -247,32 +266,70 @@ def cli_main():
     trainer = get_trainer(args)
     
     if args.is_matryoshka:
-        print("Evaluating on the ASR task!")
-        args.modality = "audio"
-        for rate_audio in args.downsample_ratio_audio:
-            args.downsample_ratio_test_matry_audio = rate_audio
-            print("First evaluation round, rate: ", rate_audio)
-            trainer.test(model=modelmodule, datamodule=datamodule)
         
-        print("Evaluating on the VSR task!")
-        args.modality = "video"
-        for rate_video in args.downsample_ratio_video:
-            args.downsample_ratio_test_matry_video = rate_video
-            print("First evaluation round, rate: ", rate_video)
-            trainer.test(model=modelmodule, datamodule=datamodule)
-            print("Second evaluation round, rate: ", rate_video)
-            trainer.test(model=modelmodule, datamodule=datamodule)
-            print("Third evaluation round, rate: ", rate_video)
-            trainer.test(model=modelmodule, datamodule=datamodule)
-        
-        print("Evaluating on the AVSR task!")
-        args.modality = "audiovisual"
-        for rate_video in args.downsample_ratio_video:
-            args.downsample_ratio_test_matry_video = rate_video
+        if args.test_specific_ratio or args.test_specific_modality:
+            if args.test_specific_ratio and args.test_specific_modality:
+                args.modality = args.test_specific_modality
+                trainer.test(model=modelmodule, datamodule=datamodule)
+            elif args.test_specific_ratio:
+                print("Evaluating on the ASR task!")
+                args.modality = "audio"
+                trainer.test(model=modelmodule, datamodule=datamodule)
+
+                print("Evaluating on the VSR task!")
+                args.modality = "video"
+                trainer.test(model=modelmodule, datamodule=datamodule)
+
+                print("Evaluating on the AVSR task!")
+                args.modality = "audiovisual"
+                trainer.test(model=modelmodule, datamodule=datamodule)
+            else:
+                args.modality = args.test_specific_modality
+
+                if args.modality == "audio":
+                    for rate_audio in args.downsample_ratio_audio:
+                        args.downsample_ratio_test_matry_audio = rate_audio
+                        trainer.test(model=modelmodule, datamodule=datamodule)
+                elif args.modality == "video":
+                    for rate_video in args.downsample_ratio_video:
+                        args.downsample_ratio_test_matry_video = rate_video
+                        trainer.test(model=modelmodule, datamodule=datamodule)
+                else:
+                    for rate_video in args.downsample_ratio_video:
+                        args.downsample_ratio_test_matry_video = rate_video
+                        for rate_audio in args.downsample_ratio_audio:
+                            args.downsample_ratio_test_matry_audio = rate_audio
+                            trainer.test(model=modelmodule, datamodule=datamodule)
+
+
+        else: # We evaluate for each task and for each compression ratio.
+
+            print("Evaluating on the ASR task!")
+            args.modality = "audio"
             for rate_audio in args.downsample_ratio_audio:
                 args.downsample_ratio_test_matry_audio = rate_audio
-                print(f"First evaluation round: audio rate {rate_audio}, video_rate {rate_video}.", rate_video)
+                print("First evaluation round, rate: ", rate_audio)
                 trainer.test(model=modelmodule, datamodule=datamodule)
+            
+            print("Evaluating on the VSR task!")
+            args.modality = "video"
+            for rate_video in args.downsample_ratio_video:
+                args.downsample_ratio_test_matry_video = rate_video
+                print("First evaluation round, rate: ", rate_video)
+                trainer.test(model=modelmodule, datamodule=datamodule)
+                print("Second evaluation round, rate: ", rate_video)
+                trainer.test(model=modelmodule, datamodule=datamodule)
+                print("Third evaluation round, rate: ", rate_video)
+                trainer.test(model=modelmodule, datamodule=datamodule)
+            
+            print("Evaluating on the AVSR task!")
+            args.modality = "audiovisual"
+            for rate_video in args.downsample_ratio_video:
+                args.downsample_ratio_test_matry_video = rate_video
+                for rate_audio in args.downsample_ratio_audio:
+                    args.downsample_ratio_test_matry_audio = rate_audio
+                    print(f"First evaluation round: audio rate {rate_audio}, video_rate {rate_video}.", rate_video)
+                    trainer.test(model=modelmodule, datamodule=datamodule)
     else:
     
         modelmodule.args.modality = "audio"
