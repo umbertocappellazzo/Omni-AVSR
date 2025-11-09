@@ -186,7 +186,6 @@ def parse_args():
         "--test-specific-modality",
         default = False,
         type = bool,
-        choices = ["audio", "video", "audiovisual"],
         help= "Whether to test Omni-AVSR on a specific task."
         )
     parser.add_argument(
@@ -205,6 +204,7 @@ def parse_args():
         "--task-to-test",
         default=None,
         type=str,
+        choices = ["audio", "video", "audiovisual"],
         help="Task to evaluate Omni-AVSR on.",
     )
     parser.add_argument(
@@ -269,7 +269,7 @@ def cli_main():
         
         if args.test_specific_ratio or args.test_specific_modality:
             if args.test_specific_ratio and args.test_specific_modality:
-                args.modality = args.test_specific_modality
+                args.modality = args.task_to_test
                 trainer.test(model=modelmodule, datamodule=datamodule)
             elif args.test_specific_ratio:
                 print("Evaluating on the ASR task!")
@@ -284,7 +284,7 @@ def cli_main():
                 args.modality = "audiovisual"
                 trainer.test(model=modelmodule, datamodule=datamodule)
             else:
-                args.modality = args.test_specific_modality
+                args.modality = args.task_to_test
 
                 if args.modality == "audio":
                     for rate_audio in args.downsample_ratio_audio:
