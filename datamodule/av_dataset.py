@@ -38,7 +38,6 @@ def load_audio(path):
     rtype: torch, T x 1
     """
     waveform, sample_rate = torchaudio.load(path[:-4] + ".wav", normalize=True)
-    print(waveform.shape)
     return waveform.transpose(1, 0)
 
 

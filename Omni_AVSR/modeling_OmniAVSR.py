@@ -532,7 +532,7 @@ class AVSR_LLMs(nn.Module):
         audios = audios.cpu().numpy()
         
         #audio_extract = self.audio_frontend(audios.squeeze(-1), return_tensors="pt",sampling_rate =16000).input_features
-        audio_extract = self.audio_frontend(audios[0].mean(axis=-1), return_tensors="pt",sampling_rate =16000).input_features
+        audio_extract = self.audio_frontend(audios[:,0], return_tensors="pt",sampling_rate =16000).input_features
         audio_enc = self.audio_encoder(audio_extract.cuda().to(torch.bfloat16)).last_hidden_state
     
         # Due to the 30s padding required by Whisper, we drop the tokens that correspond to the padded 0s. As 1s corresponds to 50 tokens, we truncate acccordingly.
