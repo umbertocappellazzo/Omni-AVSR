@@ -69,6 +69,11 @@ def parse_args():
         type= bool,
     )
     parser.add_argument(
+        "--use-shared-lora-task-specific",
+        default= False,
+        type= bool,
+    )
+    parser.add_argument(
         "--is-matryoshka",
         default= False,
         type= bool,
