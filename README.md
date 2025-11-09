@@ -298,7 +298,7 @@ To test a trained model, either you set `--auto-test True` when starting a new t
 
 </details>
 
-If you want to run an inference experiment, you need to define the argument `--pretrained-model-path` and set it to the path to the pre-trained ckpt. Furthermore, you need to specify the same arguments used for the training. Below one example for the Omni-AVSR-ST that test the pre-trained ckpt provided. 
+If you want to run an inference experiment, you need to define the argument `--pretrained-model-path` and set it to the path to the pre-trained ckpt. Furthermore, you need to specify the same arguments used for the training. Below one example for the Omni-AVSR-ST that tests the pre-trained ckpt provided. By default, Omni-AVSR is evaluated on each compression rate and each task. If you want to test it only on one task, for example ASR, please set `--test-specific-modality True` and `--task-to-test audio`. If you want to test Omni-AVSR on a specific audio and/or video compression rate, set `--test-specific-ratio True` and set `--downsample-ratio-test-matry-audio`/`--downsample-ratio-test-matry-video` accordingly. 
 
 ```Shell
 python eval_OmniAVSR.py --exp-name Omni_AVSR-ST_inference --pretrained-model-path path_to_ckpt --root-dir path_to_root_dir --modality audiovisual \
