@@ -333,7 +333,7 @@ def cli_main():
                 args.downsample_ratio_test_matry_video = rate_video
                 for rate_audio in args.downsample_ratio_audio:
                     args.downsample_ratio_test_matry_audio = rate_audio
-                    print(f"First evaluation round: audio rate {rate_audio}, video_rate {rate_video}.", rate_video)
+                    print(f"First evaluation round: audio rate {rate_audio}, video_rate {rate_video}.")
                     trainer.test(model=modelmodule, datamodule=datamodule)
     else:
     
