@@ -303,7 +303,7 @@ If you want to run an inference experiment, you need to define the argument `--p
 ```Shell
 python eval_OmniAVSR.py --exp-name Omni_AVSR-ST_inference --pretrained-model-path path_to_ckpt --root-dir path_to_root_dir --modality audiovisual \
 --compression-mode avg-pooling --audio-encoder-name openai/whisper-medium.en --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt \
---llm-model meta-llama/Llama-3.2-1B --hidden-size 2048 --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
+--llm-model meta-llama/Llama-3.2-1B --unfrozen-modules peft_llm lora_avhubert --use-lora-avhubert True --add-PETF-LLM lora \
 --rank 32 --alpha 4 --downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --matry-weights 1. 1.5 1. --is-matryoshka True --is-task-specific True \
 --use-shared-lora-task-specific True --test-file lrs3_test_transcript.csv --num-beams 15 --max-dec-tokens 32 --decode-snr-target 999999
 ```
