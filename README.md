@@ -349,7 +349,7 @@ If you find our work useful, please cite:
 For questions and discussions, please:
 - Open an issue on GitHub
 - Email: umbertocappellazzo@gmail.com
-- Visit our [project page](https://github.com/umbertocappellazzo/Omni-AVSR) and our [preprint]()
+- Visit our [project page](https://umbertocappellazzo.github.io/Omni-AVSR/) and our [preprint]()
 
 ---
 
