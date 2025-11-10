@@ -520,6 +520,30 @@
             font-size: 0.95rem;
         }
 
+        /* Ground Truth Card */
+        .ground-truth-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 3px solid var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .ground-truth-card .transcription-header {
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .ground-truth-card .model-name {
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .ground-truth-card .transcription-text {
+            font-weight: 500;
+            color: var(--text);
+        }
 
 
         /* Comparison Table */
@@ -861,7 +885,7 @@
         <section id="qualitative results">
             <h2 style="font-family:'Comic Sans MS'">Qualitative Results</h2>
             <p>
-                Below we include some clip videos from the LRS3 test set and the corresponding generated transcriptions using Omni-AVSR-ST using audio-only, video-only, or audio-visual modalities at different compression rates. Note how the higher compression rates do not impair the model's performance thanks to the Matryoshka traning framework.
+                Below we include some clip videos from the LRS3 test set and the corresponding generated transcriptions using Omni-AVSR-ST using audio-only, video-only, or audio-visual modalities at different compression rates. The *WER* displayed is the one obtained by each model across the 5 videos.
             </p>
 
             <div class="video-transcription-container">
@@ -882,60 +906,82 @@
 
                 <!-- Right: Transcriptions -->
                 <div class="transcriptions" id="transcriptionsContainer">
+                    <!-- Ground Truth -->
+                    <div class="ground-truth-card">
+                        <div class="transcription-header">
+                            <span class="model-name">📝 Ground Truth</span>
+                        </div>
+                        <div class="transcription-text" id="ground-truth-text">
+                            she never had to duck and cover under her desk at school
+                        </div>
+                    </div>
+
+                <div class="transcriptions" id="transcriptionsContainer">
                     <!-- Model 1 -->
                     <div class="transcription-card">
                         <div class="transcription-header">
                             <span class="model-name">Audio-only, Rate: 4</span>
-                            <span class="wer-badge">WER: 15.2%</span>
+                            <span class="wer-badge">WER: 1.06%</span>
                         </div>
                         <div class="transcription-text" id="model1-text">
-                            This is the transcription from Model A for Video 1. Replace with your actual transcription text from this model.
+                            she never had to duck and cover under her desk at school
                         </div>
                     </div>
 
                     <!-- Model 2 -->
                     <div class="transcription-card">
                         <div class="transcription-header">
-                            <span class="model-name">Model B</span>
-                            <span class="wer-badge">WER: 12.8%</span>
+                            <span class="model-name">Audio-only, Rate: 16</span>
+                            <span class="wer-badge">WER: 2.13%</span>
                         </div>
                         <div class="transcription-text" id="model2-text">
-                            This is the transcription from Model B for Video 1. Replace with your actual transcription text from this model.
+                            she never had to duck and cover under her desk at school
                         </div>
                     </div>
 
                     <!-- Model 3 -->
                     <div class="transcription-card">
                         <div class="transcription-header">
-                            <span class="model-name">Model C</span>
-                            <span class="wer-badge">WER: 10.5%</span>
+                            <span class="model-name">Video-only, Rate: 2</span>
+                            <span class="wer-badge">WER: 18.08%</span>
                         </div>
                         <div class="transcription-text" id="model3-text">
-                            This is the transcription from Model C for Video 1. Replace with your actual transcription text from this model.
+                            she never had a steady cover under her desk at school
                         </div>
                     </div>
 
                     <!-- Model 4 -->
                     <div class="transcription-card">
                         <div class="transcription-header">
-                            <span class="model-name">Model D</span>
-                            <span class="wer-badge">WER: 9.1%</span>
+                            <span class="model-name">Video-only, Rate: 5</span>
+                            <span class="wer-badge">WER: 17.02%</span>
                         </div>
                         <div class="transcription-text" id="model4-text">
-                            This is the transcription from Model D for Video 1. Replace with your actual transcription text from this model.
+                            she never had a steady cover under her desk at school
                         </div>
                     </div>
 
                     <!-- Your Model (OMNI-AVSR) -->
                     <div class="transcription-card">
                         <div class="transcription-header">
-                            <span class="model-name">OMNI-AVSR (Ours)</span>
-                            <span class="wer-badge">WER: 7.3%</span>
+                            <span class="model-name">Audio-visual, A Rate: 4, V Rate: 2</span>
+                            <span class="wer-badge">WER: 1.06%</span>
                         </div>
                         <div class="transcription-text" id="model5-text">
-                            This is the transcription from OMNI-AVSR for Video 1. Replace with your actual transcription text from your model.
+                            she never had to duck and cover under her desk at school
                         </div>
                     </div>
+
+                    <div class="transcription-card">
+                        <div class="transcription-header">
+                            <span class="model-name">Audio-visual, A Rate: 16, V Rate: 5</span>
+                            <span class="wer-badge">WER: 1.06%</span>
+                        </div>
+                        <div class="transcription-text" id="model6-text">
+                            she never had to duck and cover under her desk at school
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -1014,32 +1060,49 @@
         // Transcription data for each video and model
         const transcriptionData = {
             0: { // Video 1
-                model1: { text: "Transcription from Model A for Video 1. Replace with actual text.", wer: "15.2%" },
-                model2: { text: "Transcription from Model B for Video 1. Replace with actual text.", wer: "12.8%" },
-                model3: { text: "Transcription from Model C for Video 1. Replace with actual text.", wer: "10.5%" },
-                model4: { text: "Transcription from Model D for Video 1. Replace with actual text.", wer: "9.1%" },
-                model5: { text: "Transcription from OMNI-AVSR for Video 1. Replace with actual text.", wer: "7.3%" }
+                groundTruth: "she never had to duck and cover under her desk at school",
+                model1: { text: "she never had to duck and cover under her desk at school", wer: "1.06%" },
+                model2: { text: "she never had to duck and cover under her desk at school", wer: "2.13%" },
+                model3: { text: "she never had a steady cover under her desk at school", wer: "18.08%" },
+                model4: { text: " she never had a steady cover under her desk at school", wer: "17.02%" },
+                model5: { text: "she never had to duck and cover under her desk at school", wer: "1.06%" },
+                model6: { text: "she never had to duck and cover under her desk at school", wer: "1.06%" }
             },
             1: { // Video 2
-                model1: { text: "Transcription from Model A for Video 2. Replace with actual text.", wer: "16.1%" },
-                model2: { text: "Transcription from Model B for Video 2. Replace with actual text.", wer: "13.5%" },
-                model3: { text: "Transcription from Model C for Video 2. Replace with actual text.", wer: "11.2%" },
-                model4: { text: "Transcription from Model D for Video 2. Replace with actual text.", wer: "9.8%" },
-                model5: { text: "Transcription from OMNI-AVSR for Video 2. Replace with actual text.", wer: "7.9%" }
+                groundTruth: "there's going to be a new system based on donated package tracking technology from the logistics company that i work for",
+                model1: { text: "there's going to be a new system based on donated package tracking technology from the logistics company that i work for", wer: "1.06%" },
+                model2: { text: "there's going to be a new system based on donated packaged tracking technology from the logistics company that i work for", wer: "2.13%" },
+                model3: { text: "there's going to be a new system based on donating back and tracking technology from the lucasgas company that i work for", wer: "18.08%" },
+                model4: { text: "there's going to be a new system based on donating backtracking technology from the lucy's company that i work for", wer: "17.02%" },
+                model5: { text: "there's going to be a new system based on donated package tracking technology from the logistics company that i work for", wer: "1.06%" },
+                model6: { text: "there's going to be a new system based on donated package tracking technology from the logistics company that i work for", wer: "1.06%" }
             },
             2: { // Video 3
-                model1: { text: "Transcription from Model A for Video 3. Replace with actual text.", wer: "14.8%" },
-                model2: { text: "Transcription from Model B for Video 3. Replace with actual text.", wer: "12.3%" },
-                model3: { text: "Transcription from Model C for Video 3. Replace with actual text.", wer: "10.1%" },
-                model4: { text: "Transcription from Model D for Video 3. Replace with actual text.", wer: "8.7%" },
-                model5: { text: "Transcription from OMNI-AVSR for Video 3. Replace with actual text.", wer: "6.8%" }
+                groundTruth: "i became a psychology researcher and i've devoted my work to understanding the human capacity to care for others",
+                model1: { text: "became a psychology researcher and i've devoted my work to understanding the human capacity to care for others", wer: "1.06%" },
+                model2: { text: "i became a psychology researcher and i've devoted my work to understanding the human capacity to care for others", wer: "2.13%" },
+                model3: { text: "became a psychology researcher and i've devoted my work to understanding the human capacity to care for others", wer: "18.08%" },
+                model4: { text: "became a psychology researcher and i've devoted my work to understanding the human capacity to care for others", wer: "17.02%" },
+                model5: { text: "became a psychology researcher and i've devoted my work to understanding the human capacity to care for others", wer: "1.06%" },
+                model6: { text: "i became a psychology researcher and i've devoted my work to understanding the human capacity to care for others", wer: "1.06%" }
             },
             3: { // Video 4
-                model1: { text: "Transcription from Model A for Video 4. Replace with actual text.", wer: "15.5%" },
-                model2: { text: "Transcription from Model B for Video 4. Replace with actual text.", wer: "13.1%" },
-                model3: { text: "Transcription from Model C for Video 4. Replace with actual text.", wer: "10.8%" },
-                model4: { text: "Transcription from Model D for Video 4. Replace with actual text.", wer: "9.4%" },
-                model5: { text: "Transcription from OMNI-AVSR for Video 4. Replace with actual text.", wer: "7.5%" }
+                groundTruth: "and so many of my early memories involved intricate daydreams where i would walk across borders",
+                model1: { text: "and so many of my early memories involved intricate daydreams where i would walk across borders", wer: "1.06%" },
+                model2: { text: "and so many of my early memories involved intimate daydreams where i would walk across borders", wer: "2.13%" },
+                model3: { text: "and so many of my early memories involve trying to change tangles around how to walk across borders", wer: "18.08%" },
+                model4: { text: "and so many of my early memories involve flinging change tangles or how i'd walk across borders", wer: "17.02%" },
+                model5: { text: "and so many of my early memories involved intricate daydreams where i would walk across borders", wer: "1.06%" },
+                model6: { text: "and so many of my early memories involved intimate daydreams where i would walk across borders", wer: "1.06%" }
+            },
+            4: { // Video 4
+                groundTruth: "it turned out that we were doing a lot of low level drug cases on the streets just around the corner from our office in trenton",
+                model1: { text: "it turned out that we were doing a lot of low level drug cases on the streets just around the corner from our office in trenton", wer: "1.06%" },
+                model2: { text: "it turned out that we were doing a lot of low level drug cases on the streets just around the corner from our office in trenton", wer: "2.13%" },
+                model3: { text: "it turned out that we were doing a lot of low level drug cases on the streets just around the corner from our office in downtown", wer: "18.08%" },
+                model4: { text: "it turned out that we were doing a lot of low level drug cases on the streets just around the corner from our office in downtown", wer: "17.02%" },
+                model5: { text: "it turned out that we were doing a lot of low level drug cases on the streets just around the corner from our office in trenton", wer: "1.06%" },
+                model6: { text: "it turned out that we were doing a lot of low level drug cases on the streets just around the corner from our office in trenton", wer: "1.06%" }
             }
         };
 
@@ -1057,11 +1120,14 @@
 
             // Update transcriptions
             const data = transcriptionData[videoIndex];
+            document.getElementById('ground-truth-text').textContent = data.groundTruth;
             document.getElementById('model1-text').textContent = data.model1.text;
             document.getElementById('model2-text').textContent = data.model2.text;
             document.getElementById('model3-text').textContent = data.model3.text;
             document.getElementById('model4-text').textContent = data.model4.text;
             document.getElementById('model5-text').textContent = data.model5.text;
+            document.getElementById('model6-text').textContent = data.model5.text
+                ;
 
             // Update WER badges
             const werBadges = document.querySelectorAll('.wer-badge');
@@ -1070,6 +1136,7 @@
             werBadges[2].textContent = `WER: ${data.model3.wer}`;
             werBadges[3].textContent = `WER: ${data.model4.wer}`;
             werBadges[4].textContent = `WER: ${data.model5.wer}`;
+            werBadges[5].textContent = `WER: ${data.model6.wer}`;
         }
 
     </script>
