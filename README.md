@@ -19,8 +19,8 @@
 
 ## 📢 News
 
-- **[2024-11]** 🚀 Code and models released!
-- **[2024-10]** 📝 Paper submitted to arXiv.
+- **[11-2025]** 🚀 Code and models released!
+- **[11-2025]** 📝 Paper submitted to arXiv.
 
 ---
 
