@@ -11,7 +11,7 @@
 
 ¹Imperial College London ²University of Surrey
 
-### 📄 [`Paper`](https://arxiv.org/abs/your-paper-id) | 🌐 [`Project Page`](https://github.com/umbertocappellazzo/Omni-AVSR) | 💻 [`Code`](https://github.com/umbertocappellazzo/Omni-AVSR) | 🔖 [`BibTeX`](#-citation)
+### 📄 [`Paper`](https://arxiv.org/abs/your-paper-id) | 🌐 [`Project Page`](https://umbertocappellazzo.github.io/Omni-AVSR/) | 💻 [`Code`](https://github.com/umbertocappellazzo/Omni-AVSR) | 🔖 [`BibTeX`](#-citation)
 
 </div>
 
