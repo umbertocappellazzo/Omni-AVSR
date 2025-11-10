@@ -422,6 +422,106 @@
             height: auto;
         }
 
+        /* Video Transcription Section */
+        .video-transcription-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2.5rem 0;
+            align-items: start;
+        }
+
+        .video-player {
+            position: sticky;
+            top: 100px;
+        }
+
+        .video-player video {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .video-selector {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .video-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .video-btn:hover {
+            border-color: var(--primary);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .video-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .transcriptions {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .transcription-card {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .transcription-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+        }
+
+        .transcription-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .model-name {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .wer-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .transcription-text {
+            color: var(--text-light);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+
+
         /* Comparison Table */
         .comparison-table {
             width: 100%;
@@ -567,6 +667,15 @@
                 padding: 0.75rem;
                 font-size: 0.9rem;
             }
+
+            .video-transcription-container {
+                grid-template-columns: 1fr;
+            }
+
+            .video-player {
+                position: relative;
+                top: 0;
+            }
         }
     </style>
 </head>
@@ -589,6 +698,7 @@
             <li><a href="#introduction" style="font-family:'Comic Sans MS'">Overview</a></li>
             <li><a href="#method" style="font-family:'Comic Sans MS'">Omni-AVSR Details</a></li>
             <li><a href="#results" style="font-family:'Comic Sans MS'">Main Results</a></li>
+            <li><a href="#qualitative results" style="font-family:'Comic Sans MS'">Qualitative Results</a></li>
             <li><a href="#ablations" style="font-family:'Comic Sans MS'">Ablation Studies</a></li>
             <li><a href="#conclusion" style="font-family:'Comic Sans MS'">Conclusion</a></li>
             <li><a href="#citation" style="font-family:'Comic Sans MS'">Citation</a></li>
@@ -747,6 +857,89 @@
         </section>
 
 
+        <!-- Qualitative Results Section -->
+        <section id="qualitative results">
+            <h2 style="font-family:'Comic Sans MS'">Qualitative Results</h2>
+            <p>
+                Below we include some clip videos from the LRS3 test set and the corresponding generated transcriptions using Omni-AVSR-ST using audio-only, video-only, or audio-visual modalities at different compression rates. Note how the higher compression rates do not impair the model's performance thanks to the Matryoshka traning framework.
+            </p>
+
+            <div class="video-transcription-container">
+                <!-- Left: Video Player -->
+                <div class="video-player">
+                    <video id="videoPlayer" controls>
+                        <source src="videos/dYNc3P4jSt4_00004_h264.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-selector">
+                        <button class="video-btn active" onclick="switchVideo('videos/dYNc3P4jSt4_00004_h264.mp4', 0)">Video 1</button>
+                        <button class="video-btn" onclick="switchVideo('videos/Sa27SUR0Mlo_00013_h264.mp4', 1)">Video 2</button>
+                        <button class="video-btn" onclick="switchVideo('videos/uqS6T6TAu74_00001_h264.mp4', 2)">Video 3</button>
+                        <button class="video-btn" onclick="switchVideo('videos/YD5PFdghryc_00001_h264.mp4', 3)">Video 4</button>
+                        <button class="video-btn" onclick="switchVideo('videos/ZJNESMhIxQ0_00001_h264.mp4', 4)">Video 5</button>
+                    </div>
+                </div>
+
+                <!-- Right: Transcriptions -->
+                <div class="transcriptions" id="transcriptionsContainer">
+                    <!-- Model 1 -->
+                    <div class="transcription-card">
+                        <div class="transcription-header">
+                            <span class="model-name">Audio-only, Rate: 4</span>
+                            <span class="wer-badge">WER: 15.2%</span>
+                        </div>
+                        <div class="transcription-text" id="model1-text">
+                            This is the transcription from Model A for Video 1. Replace with your actual transcription text from this model.
+                        </div>
+                    </div>
+
+                    <!-- Model 2 -->
+                    <div class="transcription-card">
+                        <div class="transcription-header">
+                            <span class="model-name">Model B</span>
+                            <span class="wer-badge">WER: 12.8%</span>
+                        </div>
+                        <div class="transcription-text" id="model2-text">
+                            This is the transcription from Model B for Video 1. Replace with your actual transcription text from this model.
+                        </div>
+                    </div>
+
+                    <!-- Model 3 -->
+                    <div class="transcription-card">
+                        <div class="transcription-header">
+                            <span class="model-name">Model C</span>
+                            <span class="wer-badge">WER: 10.5%</span>
+                        </div>
+                        <div class="transcription-text" id="model3-text">
+                            This is the transcription from Model C for Video 1. Replace with your actual transcription text from this model.
+                        </div>
+                    </div>
+
+                    <!-- Model 4 -->
+                    <div class="transcription-card">
+                        <div class="transcription-header">
+                            <span class="model-name">Model D</span>
+                            <span class="wer-badge">WER: 9.1%</span>
+                        </div>
+                        <div class="transcription-text" id="model4-text">
+                            This is the transcription from Model D for Video 1. Replace with your actual transcription text from this model.
+                        </div>
+                    </div>
+
+                    <!-- Your Model (OMNI-AVSR) -->
+                    <div class="transcription-card">
+                        <div class="transcription-header">
+                            <span class="model-name">OMNI-AVSR (Ours)</span>
+                            <span class="wer-badge">WER: 7.3%</span>
+                        </div>
+                        <div class="transcription-text" id="model5-text">
+                            This is the transcription from OMNI-AVSR for Video 1. Replace with your actual transcription text from your model.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Ablation Results Section -->
         <section id="ablations">
             <h2 style="font-family:'Comic Sans MS'">Ablation Studies</h2>
@@ -816,5 +1009,71 @@
     <footer>
         <p>&copy; 2025 Umberto Cappellazzo. | <a href="https://github.com/umbertocappellazzo">GitHub</a> | <a href="https://x.com/Umberto_Senpai">Twitter</a> | <a href="https://www.linkedin.com/in/umberto-cappellazzo-116093150/">LinkedIn</a></p>
     </footer>
+
+    <script>
+        // Transcription data for each video and model
+        const transcriptionData = {
+            0: { // Video 1
+                model1: { text: "Transcription from Model A for Video 1. Replace with actual text.", wer: "15.2%" },
+                model2: { text: "Transcription from Model B for Video 1. Replace with actual text.", wer: "12.8%" },
+                model3: { text: "Transcription from Model C for Video 1. Replace with actual text.", wer: "10.5%" },
+                model4: { text: "Transcription from Model D for Video 1. Replace with actual text.", wer: "9.1%" },
+                model5: { text: "Transcription from OMNI-AVSR for Video 1. Replace with actual text.", wer: "7.3%" }
+            },
+            1: { // Video 2
+                model1: { text: "Transcription from Model A for Video 2. Replace with actual text.", wer: "16.1%" },
+                model2: { text: "Transcription from Model B for Video 2. Replace with actual text.", wer: "13.5%" },
+                model3: { text: "Transcription from Model C for Video 2. Replace with actual text.", wer: "11.2%" },
+                model4: { text: "Transcription from Model D for Video 2. Replace with actual text.", wer: "9.8%" },
+                model5: { text: "Transcription from OMNI-AVSR for Video 2. Replace with actual text.", wer: "7.9%" }
+            },
+            2: { // Video 3
+                model1: { text: "Transcription from Model A for Video 3. Replace with actual text.", wer: "14.8%" },
+                model2: { text: "Transcription from Model B for Video 3. Replace with actual text.", wer: "12.3%" },
+                model3: { text: "Transcription from Model C for Video 3. Replace with actual text.", wer: "10.1%" },
+                model4: { text: "Transcription from Model D for Video 3. Replace with actual text.", wer: "8.7%" },
+                model5: { text: "Transcription from OMNI-AVSR for Video 3. Replace with actual text.", wer: "6.8%" }
+            },
+            3: { // Video 4
+                model1: { text: "Transcription from Model A for Video 4. Replace with actual text.", wer: "15.5%" },
+                model2: { text: "Transcription from Model B for Video 4. Replace with actual text.", wer: "13.1%" },
+                model3: { text: "Transcription from Model C for Video 4. Replace with actual text.", wer: "10.8%" },
+                model4: { text: "Transcription from Model D for Video 4. Replace with actual text.", wer: "9.4%" },
+                model5: { text: "Transcription from OMNI-AVSR for Video 4. Replace with actual text.", wer: "7.5%" }
+            }
+        };
+
+        // Switch video and update transcriptions
+        function switchVideo(videoSrc, videoIndex) {
+            // Update video source
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.src = videoSrc;
+            videoPlayer.load();
+
+            // Update active button
+            document.querySelectorAll('.video-btn').forEach((btn, index) => {
+                btn.classList.toggle('active', index === videoIndex);
+            });
+
+            // Update transcriptions
+            const data = transcriptionData[videoIndex];
+            document.getElementById('model1-text').textContent = data.model1.text;
+            document.getElementById('model2-text').textContent = data.model2.text;
+            document.getElementById('model3-text').textContent = data.model3.text;
+            document.getElementById('model4-text').textContent = data.model4.text;
+            document.getElementById('model5-text').textContent = data.model5.text;
+
+            // Update WER badges
+            const werBadges = document.querySelectorAll('.wer-badge');
+            werBadges[0].textContent = `WER: ${data.model1.wer}`;
+            werBadges[1].textContent = `WER: ${data.model2.wer}`;
+            werBadges[2].textContent = `WER: ${data.model3.wer}`;
+            werBadges[3].textContent = `WER: ${data.model4.wer}`;
+            werBadges[4].textContent = `WER: ${data.model5.wer}`;
+        }
+
+    </script>
+
+
 </body>
 </html>
