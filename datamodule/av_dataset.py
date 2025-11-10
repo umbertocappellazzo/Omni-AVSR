@@ -38,8 +38,8 @@ def load_audio(path):
     rtype: torch, T x 1
     """
     waveform, sample_rate = torchaudio.load(path[:-4] + ".wav", normalize=True)
-    return waveform[0,:].unsqueeze(0).transpose(1, 0)
-
+    #return waveform[0,:].unsqueeze(0).transpose(1, 0)
+    return waveform.transpose(1,0)
 
 class AVDataset_LLM(torch.utils.data.Dataset):
     def __init__(
