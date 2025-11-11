@@ -41,7 +41,7 @@ At this point, the RetinaFace detector is installed and we are ready to extract 
 
 The pre-processing stage creates the cropped mouth from a raw video, which includes face detection, landmarks tracking, face transformation and mouth cropping. 
 
-The preprocessing script requires the definition of the path to the input video we want to preprocess (`path_to_input_video`). It is optional to provide the transcription of the video (`gold_transcription`). 
+The preprocessing script requires the definition of the path to the input video we want to preprocess (`path_to_input_video`). It is optional to provide the transcription of the video (`gold_transcription`). In this folder we include a video from the LRS3 testset, `video_example.mp4`, so you can try with this one if you want.
 
 ```Shell
 python preprocess_video.py --path_to_input_video path_to_input_video --gold_transcription gold_transcription
