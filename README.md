@@ -287,6 +287,8 @@ python train_OmniAVSR.py --wandb-project wandb_project_name --root-dir path_to_r
 
 ## 📈 Evaluation
 
+### Evaluation on LRS2/LRS3 benchmarks
+
 To test a trained model, either you set `--auto-test True` when starting a new training experiment, so the inference is performed automatically at the end of the traning, or you can run `eval_Llama-AVSR.py` for Llama-AVSR and Llama-MTSK or `eval_Omni-AVSR.py` for Llama-MT and Omni-AVSR. In both cases, a handful of inference arguments must be specified as follows:
 
 <details open>
@@ -307,6 +309,11 @@ python eval_OmniAVSR.py --exp-name Omni_AVSR-ST_inference --pretrained-model-pat
 --rank 32 --alpha 4 --downsample-ratio-audio 4 16 --downsample-ratio-video 2 5 --matry-weights 1. 1.5 1. --is-matryoshka True --is-task-specific True \
 --use-shared-lora-task-specific True --test-file lrs3_test_transcript.csv --num-beams 15 --max-dec-tokens 32 --decode-snr-target 999999
 ```
+
+
+### Evaluation on a custom video
+
+If you fancy testing Omni-AVSR on a custom .mp4 video or you want to learn more about the pre-processing phase where we perform mouth cropping, please take a look in our dedicated [pre-processing section](./preprocessing_inference_example)
 
 ---
 
