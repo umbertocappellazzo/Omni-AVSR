@@ -327,9 +327,9 @@ We provide below three checkpoints, all of them use Llama 3.2-1B and ASR/VSR/AVS
 If you find our work useful, please cite:
 
 ```bibtex
-@article{cappellazzo2025Omni/AVSR,
+@article{cappellazzo2025Omni-AVSR,
   title={Omni-AVSR: Towards Unified Multimodal Speech Recognition with Large Language Models},
-  author={Umberto Cappellazzo, Xubo Liu, Pingchuan Ma, Stavros Petridis, Maja Pantic},
+  author={Umberto, Cappellazzo and Xubo, Liu and Pingchuan, Ma and Stavros, Petridis and Maja, Pantic},
   journal={arXiv preprint arXiv:2511.07253},
   year={2024}
 }
