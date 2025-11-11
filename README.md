@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![arXiv](https://img.shields.io/badge/arXiv-2024.12345-b31b1b.svg)](https://arxiv.org/abs/your-paper-id)
+[![arXiv](https://img.shields.io/badge/arXiv-2024.12345-b31b1b.svg)](https://arxiv.org/abs/2511.07253)
 [![Website](https://img.shields.io/badge/🌐-Website-blue.svg)](https://umbertocappellazzo.github.io/Omni-AVSR/)
 [![Visitors](https://visitor-badge.laobi.icu/badge?page_id=umbertocappellazzo.Omni-AVSR)](https://github.com/umbertocappellazzo/Omni-AVSR)
 [![GitHub Stars](https://img.shields.io/github/stars/umbertocappellazzo/Omni-AVSR?style=social)](https://github.com/umbertocappellazzo/Omni-AVSR/stargazers)
@@ -11,7 +11,7 @@
 
 ¹Imperial College London ²University of Surrey
 
-### 📄 [`Paper`](https://arxiv.org/abs/your-paper-id) | 🌐 [`Project Page`](https://github.com/umbertocappellazzo/Omni-AVSR) | 💻 [`Code`](https://github.com/umbertocappellazzo/Omni-AVSR) | 🔖 [`BibTeX`](#-citation)
+### 📄 [`Paper`](https://arxiv.org/abs/2511.07253) | 🌐 [`Project Page`](https://umbertocappellazzo.github.io/Omni-AVSR/) | 💻 [`Code`](https://github.com/umbertocappellazzo/Omni-AVSR) | 🔖 [`BibTeX`](#-citation)
 
 </div>
 
@@ -19,8 +19,8 @@
 
 ## 📢 News
 
-- **[2024-11]** 🚀 Code and models released!
-- **[2024-10]** 📝 Paper submitted to arXiv.
+- **[11-2025]** 🚀 Code and models released!
+- **[11-2025]** 📝 Paper submitted to arXiv.
 
 ---
 
@@ -327,10 +327,10 @@ We provide below three checkpoints, all of them use Llama 3.2-1B and ASR/VSR/AVS
 If you find our work useful, please cite:
 
 ```bibtex
-@article{yourname2024yourtitle,
-  title={Your Paper Title Here},
-  author={Your Name and Co-Author Name},
-  journal={arXiv preprint arXiv:2024.12345},
+@article{cappellazzo2025Omni-AVSR,
+  title={Omni-AVSR: Towards Unified Multimodal Speech Recognition with Large Language Models},
+  author={Umberto, Cappellazzo and Xubo, Liu and Pingchuan, Ma and Stavros, Petridis and Maja, Pantic},
+  journal={arXiv preprint arXiv:2511.07253},
   year={2024}
 }
 ```
@@ -349,7 +349,7 @@ If you find our work useful, please cite:
 For questions and discussions, please:
 - Open an issue on GitHub
 - Email: umbertocappellazzo@gmail.com
-- Visit our [project page](https://github.com/umbertocappellazzo/Omni-AVSR) and our [preprint]()
+- Visit our [project page](https://umbertocappellazzo.github.io/Omni-AVSR/) and our [preprint](https://arxiv.org/abs/2511.07253)
 
 ---
 
