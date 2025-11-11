@@ -335,7 +335,7 @@ If you find our work useful, please cite:
 }
 ```
 
----https://github.com/umbertocappellazzo/Omni-AVSR/blob/main/README.md
+---
 
 ## 🙏 Acknowledgements
 
