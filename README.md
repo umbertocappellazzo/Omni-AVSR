@@ -313,7 +313,7 @@ python eval_OmniAVSR.py --exp-name Omni_AVSR-ST_inference --pretrained-model-pat
 
 ### Evaluation on a custom video
 
-If you fancy testing Omni-AVSR on a custom .mp4 video or you want to learn more about the pre-processing phase where we perform mouth cropping, please take a look in our dedicated [pre-processing section](./preprocessing_inference_example)
+If you fancy testing Omni-AVSR on a custom .mp4 video or you want to learn more about the pre-processing phase where we perform mouth cropping, please take a look in our dedicated [pre-processing section](./preprocessing_inference_example).
 
 ---
 
