@@ -662,6 +662,26 @@
             }
         }
 
+        /* Responsive Math Equations */
+        @media (max-width: 768px) {
+            mjx-container {
+                overflow-x: auto;
+                overflow-y: hidden;
+                max-width: 100%;
+                display: block !important;
+            }
+
+            mjx-container[display="true"] {
+                font-size: 0.9em !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            mjx-container[display="true"] {
+                font-size: 0.75em !important;
+            }
+        }
+        
         @media (max-width: 768px) {
             header {
                 padding: 3rem 1.5rem;
@@ -874,6 +894,9 @@
                 width: 100%;
             }
         }
+
+
+
         
         
     </style>
