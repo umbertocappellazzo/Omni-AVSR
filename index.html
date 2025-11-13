@@ -645,62 +645,237 @@
             }
         }
 
+        
         /* Responsive */
-
         @media (max-width: 1024px) {
             .overview-cards {
-                grid-template-columns: repeat(2, 1fr);
+                flex-wrap: wrap;
+            }
+
+            .overview-card {
+                flex: 1 1 calc(50% - 1rem);
+                min-width: 200px;
+            }
+
+            .figures-container {
+                grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 768px) {
             header {
-                padding: 4rem 1.5rem;
+                padding: 3rem 1.5rem;
             }
 
             header h1 {
-                font-size: 2.2rem;
+                font-size: 1.8rem;
+                line-height: 1.3;
+            }
+
+            header .authors {
+                font-size: 1rem;
+            }
+
+            header .institution {
+                font-size: 0.9rem;
+            }
+
+            header .paper-link {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            nav {
+                padding: 1rem 1rem;
             }
 
             nav ul {
-                gap: 1rem;
+                gap: 0.75rem;
+                padding: 0;
             }
 
             nav a {
-                font-size: 0.85rem;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+
+            .container {
+                padding: 0 1rem;
             }
 
             section {
                 padding: 2rem 1.5rem;
+                margin: 1.5rem 0;
             }
 
             h2 {
-                font-size: 1.8rem;
+                font-size: 1.6rem;
+            }
+
+            h2::before {
+                width: 4px;
+                height: 1.6rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
             }
 
             .overview-cards {
                 grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .overview-card {
+                padding: 1.5rem;
+            }
+
+            .overview-card h3 {
+                font-size: 1.2rem;
             }
 
             .results-grid {
                 grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .result-card {
+                padding: 1.5rem;
+            }
+
+            .comparison-table {
+                font-size: 0.85rem;
             }
 
             .comparison-table th,
             .comparison-table td {
-                padding: 0.75rem;
-                font-size: 0.9rem;
+                padding: 0.6rem 0.4rem;
             }
 
             .video-transcription-container {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
 
             .video-player {
                 position: relative;
                 top: 0;
             }
+
+            .video-btn {
+                font-size: 0.85rem;
+                padding: 0.5rem 0.8rem;
+            }
+
+            .transcription-card {
+                padding: 1rem;
+            }
+
+            .ground-truth-card {
+                padding: 1rem;
+            }
+
+            .model-name {
+                font-size: 1rem;
+            }
+
+            .wer-badge {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.6rem;
+            }
+
+            .transcription-text {
+                font-size: 0.9rem;
+            }
+
+            .figures-gallery {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                max-height: 85vh;
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .modal-body h3 {
+                font-size: 1.4rem;
+            }
+
+            figure img {
+                border-radius: 6px;
+            }
+
+            .citation-box {
+                padding: 1rem;
+                font-size: 0.85rem;
+            }
+
+            .citation-box pre {
+                font-size: 0.8rem;
+            }
+
+            footer {
+                padding: 2rem 1rem;
+                font-size: 0.9rem;
+            }
         }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            header .paper-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            header .paper-link {
+                width: 100%;
+                text-align: center;
+            }
+
+            nav ul {
+                gap: 0.5rem;
+                justify-content: space-around;
+            }
+
+            nav a {
+                font-size: 0.75rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+            }
+
+            .overview-card {
+                padding: 1.25rem;
+            }
+
+            .comparison-table {
+                font-size: 0.75rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 0.5rem 0.3rem;
+            }
+
+            .video-selector {
+                flex-direction: column;
+            }
+
+            .video-btn {
+                width: 100%;
+            }
+        }
+        
+        
     </style>
 </head>
 <body>
