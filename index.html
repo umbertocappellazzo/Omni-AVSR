@@ -662,24 +662,34 @@
             }
         }
 
-        /* Responsive Math Equations */
+        /* Responsive styling for specific equation only */
         @media (max-width: 768px) {
-            mjx-container {
+            .responsive-equation mjx-container {
                 overflow-x: auto;
                 overflow-y: hidden;
                 max-width: 100%;
                 display: block !important;
             }
 
-            mjx-container[display="true"] {
+            .responsive-equation mjx-container[display="true"] {
                 font-size: 0.9em !important;
             }
         }
 
         @media (max-width: 480px) {
-            mjx-container[display="true"] {
+            .responsive-equation mjx-container[display="true"] {
                 font-size: 0.75em !important;
             }
+        }
+
+        /* Match equation color only for responsive-equation */
+        .responsive-equation mjx-container,
+        .responsive-equation .MathJax {
+            color: var(--text-light) !important;
+        }
+
+        .responsive-equation mjx-math {
+            color: var(--text-light) !important;
         }
         
         @media (max-width: 768px) {
@@ -998,8 +1008,10 @@
             <p>
                 Omni-AVSR is trained by averaging the auto-regressive next token prediction loss for each task for each input data. For each task-specific sequence \(\mathbf{Z}_t\), the probability of the target \(\mathbf{Y}\) is computed by \(p(\mathbf{Y}|\mathbf{Z}_t) = \prod_{s=1}^{S}p_\theta(y_s|\mathbf{Z}_t, y_{< s})\), and the corresponding loss is defined as \(\mathcal{L}_t = - \log p(\mathbf{Y}|\mathbf{Z}_t)\), where \(y_{< s}\) is the generated output sequence up to token \(s-1\), \(\theta\) is the trainable parameters, and \(t \in \{\mathsf{ASR}, \mathsf{VSR}, \mathsf{AVSR}\}\). Overall, the final objective we train on is:
 
-                $$\mathcal{L}_{\text{OMNI}} = \lambda_{\mathsf{ASR}}\mathcal{L}_{\mathsf{ASR}} + \lambda_{\mathsf{VSR}}\mathcal{L}_{\mathsf{VSR}} + \lambda_{\mathsf{AVSR}}\mathcal{L}_{\mathsf{AVSR}},$$
-                where \(\lambda_{\mathsf{ASR}}\), \(\lambda_{\mathsf{VSR}}\), \(\lambda_{\mathsf{AVSR}}\) are task-specific weights.
+                <div class="responsive-equation">
+                    $$\mathcal{L}_{\text{OMNI}} = \lambda_{\mathsf{ASR}}\mathcal{L}_{\mathsf{ASR}} + \lambda_{\mathsf{VSR}}\mathcal{L}_{\mathsf{VSR}} + \lambda_{\mathsf{AVSR}}\mathcal{L}_{\mathsf{AVSR}},$$
+                </div>
+                <p>where \(\lambda_{\mathsf{ASR}}\), \(\lambda_{\mathsf{VSR}}\), \(\lambda_{\mathsf{AVSR}}\) are weighting parameters.</p>
             </p>
 
             <h3 style="font-family:'Comic Sans MS'">Efficient LLM Adaptation via Omni-LoRA</h3>
