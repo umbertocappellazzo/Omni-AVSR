@@ -43,14 +43,10 @@ def collate_LLM(batch, tokenizer, modality, is_trainval= True):
         if modality == "audio" or modality == "audiovisual" or modality == "audiovisual_avhubert":
             lengths.append(len(batch["audio"]))
     
-    if tokenizer.name_or_path in ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", "meta-llama/Llama-2-7b-hf", "mistralai/Mistral-7B-v0.1"]:
-        tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<s>"]]).unsqueeze(0)
-    elif tokenizer.name_or_path in ["google/gemma-2b","google/gemma-7b", "google/gemma-2-9b"]:
-        tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<bos>"]]).unsqueeze(0)
-    elif "Qwen" in tokenizer.name_or_path:
+    if "Qwen" in tokenizer.name_or_path:
         tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([[]], dtype=torch.long)
     else:
-        assert tokenizer.name_or_path == "meta-llama/Meta-Llama-3-8B" or tokenizer.name_or_path == "meta-llama/Meta-Llama-3.1-8B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-1B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-3B"
+        assert tokenizer.name_or_path == "meta-llama/Meta-Llama-3.1-8B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-1B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-3B"
         tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<|begin_of_text|>"]]).unsqueeze(0)
     
     if is_trainval: # We need to set to -100 the padding tokens for the loss computation.
