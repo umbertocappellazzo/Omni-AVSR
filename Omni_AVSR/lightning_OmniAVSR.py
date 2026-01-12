@@ -139,7 +139,6 @@ class ModelModule_LLM(LightningModule):
                                    is_single_matry_projector = args.is_single_matry_projector,
                                    )
             
-            self.model._unfreeze_PETF(args.unfrozen_modules)
             n_parameters_learn = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
             print("Total number of trainable parameters of the model: ", n_parameters_learn)
                 
