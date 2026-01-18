@@ -253,6 +253,22 @@
             line-height: 1.8;
         }
 
+        .effect-gradient {
+          font-size: 1.4rem;
+          font-weight: 700;
+          background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #ff6b6b);
+          background-size: 300% 300%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: gradient 4s ease infinite;
+        }
+
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        
         /* Highlights */
         .highlights {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(240, 147, 251, 0.08) 100%);
@@ -909,6 +925,7 @@
 <body>
     <header>
         <h1 style="font-family:'Comic Sans MS';color:#343434">Omni-AVSR: Towards Unified Multimodal Speech Recognition with Large Language Models</h1>
+        <h3 class="effect-gradient">Accepted for publication at IEEE ICASSP 2026! 🚀🚀</h3>
         <div class="authors">Umberto Cappellazzo<sup style="color:red;">&spades;</sup>, Xubo Liu<sup style="color:red;">&clubs;</sup>, Pingchuan Ma<sup style="color:red;">&spades;</sup>, Stavros Petridis<sup style="color:red;">&spades;,&diams;</sup>, Maja Pantic<sup style="color:red;">&spades;,&diams;</sup></div>
         <div class="institution">
             <sup style="color:red;">&spades;</sup><span style="font-family:'Comic Sans MS';color:#343434;"> Imperial College London</span> &nbsp; <sup style="color:red;">&clubs;</sup><span style="font-family:'Comic Sans MS';color:#343434"> University of Surrey</span> &nbsp; <sup style="color:red;">&diams;</sup><span style="font-family:'Comic Sans MS';color:#343434"> NatWest AI Research</span>
