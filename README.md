@@ -18,7 +18,7 @@
 ---
 
 ## 📢 News
-- **[11-2025]** The paper has been accepted to **IEEE ICASSP 2026**! 🤩 🤩
+- **[01-2026]** The paper has been accepted to **IEEE ICASSP 2026**! 🤩 🤩
 - **[11-2025]** 🚀 Code and models released!
 - **[11-2025]** 📝 Paper submitted to arXiv.
 
