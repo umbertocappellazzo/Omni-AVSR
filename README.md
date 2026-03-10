@@ -337,8 +337,8 @@ If you find our work useful, please cite:
 @article{cappellazzo2025Omni-AVSR,
   title={Omni-AVSR: Towards Unified Multimodal Speech Recognition with Large Language Models},
   author={Umberto, Cappellazzo and Xubo, Liu and Pingchuan, Ma and Stavros, Petridis and Maja, Pantic},
-  journal={arXiv preprint arXiv:2511.07253},
-  year={2024}
+  journal={IEEE ICASSP},
+  year={2026}
 }
 ```
 
