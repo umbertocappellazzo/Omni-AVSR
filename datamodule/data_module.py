@@ -222,7 +222,7 @@ class DataModule_LLM(LightningDataModule):
     def test_dataloader(self):
         dataset = AVDataset_LLM(
             root_dir=self.args.root_dir,
-            label_path=os.path.join(self.args.root_dir, "labels", self.args.test_file), #label_path=os.path.join(self.args.root_dir, "Upenn_processed_data/labels", self.args.test_file),
+            label_path=os.path.join(self.args.root_dir, "Upenn_processed_data/labels", self.args.test_file), #label_path=os.path.join(self.args.root_dir, "labels", self.args.test_file),
             subset="test",
             modality=self.args.modality,
             audio_transform=AudioTransform(
