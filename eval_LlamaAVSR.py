@@ -277,7 +277,7 @@ def cli_main():
     else:
         if args.modality == "audio":
             
-            for snr_level in [4,0,-4,-8,-12]:
+            for snr_level in [999999,4,0,-4,-8,-12]:
                 args.decode_snr_target = snr_level    
                 
                 print("Evaluating at SNR = ", snr_level)
