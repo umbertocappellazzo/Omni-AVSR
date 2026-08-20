@@ -8,6 +8,9 @@ Created on Thu Jul 17 15:16:24 2025
 import sys
 sys.path.append("..")
 
+import os
+import csv
+
 import torch
 import torchaudio
 from utils.cosine import WarmupCosineScheduler
@@ -141,7 +144,10 @@ class ModelModule_LLM(LightningModule):
             
             n_parameters_learn = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
             print("Total number of trainable parameters of the model: ", n_parameters_learn)
-                
+        
+        # Per-sample results CSV, opened in on_test_epoch_start.
+        self.csv_file = None
+        self.csv_writer = None
         
         # initialize the full model from the checkpoint for inference.
         if args.pretrained_model_path:
@@ -204,15 +210,47 @@ class ModelModule_LLM(LightningModule):
         
         self.total_edit_distance += compute_word_level_distance(batch["gold_text"], generated_text)
         self.total_length += len(batch["gold_text"].split())
-        
+    
+        if self.csv_writer is not None:
+            self.csv_writer.writerow([
+                batch["rel_path"],
+                getattr(self.args, "model_name", None),
+                getattr(self.args, "noise_type", ""),
+                getattr(self.args, "decode_snr_target", ""),
+                batch["gold_text"],
+                generated_text,
+            ])
+            # Flush per row: beam search dominates the runtime, so the cost is
+            # negligible and a crash mid-run leaves the rows already written intact.
+            self.csv_file.flush()
+
         return
 
     def on_test_epoch_start(self):
         self.total_length = 0
         self.total_edit_distance = 0
         
+        results_csv = getattr(self.args, "results_csv", None)
+
+        os.makedirs(os.path.dirname(os.path.abspath(results_csv)), exist_ok=True)
+
+        # Append, not overwrite: eval_LlamaAVSR.py calls trainer.test() several times
+        # in one process (three rounds for VSR, one per rate for Matryoshka), and this
+        # hook fires on every call. Opening with "w" would keep only the last round.
+        is_new = (not os.path.exists(results_csv)) or os.path.getsize(results_csv) == 0
+        self.csv_file = open(results_csv, "a", newline="", encoding="utf-8")
+        self.csv_writer = csv.writer(self.csv_file)
+        if is_new:
+            self.csv_writer.writerow(["FILE_NAME", "MODEL", "NOISE_TYPE", "SNR_VALUE",
+                                      "GROUND_TRUTH_TEXT", "PREDICTED_TEXT"])
+            self.csv_file.flush()
+
         print(f"Setting {self.args.modality} modality to the model.")
         self.model.modality = self.args.modality
         
     def on_test_epoch_end(self):
         self.log("wer", self.total_edit_distance / self.total_length)
+
+        if self.csv_file is not None:
+            self.csv_file.close()
+            self.csv_file, self.csv_writer = None, None

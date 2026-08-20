@@ -57,6 +57,7 @@ def collate_LLM(batch, tokenizer, modality, is_trainval= True):
     else: # In inference we don't have access to the text info.
         labels = None
         batch_out["gold_text"] = batch["tokens"]
+        batch_out["rel_path"] = batch["rel_path"]
         
     batch_out["tokens"] = tokens
     

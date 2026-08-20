@@ -93,13 +93,13 @@ class AVDataset_LLM(torch.utils.data.Dataset):
             if self.downsample_video:
                 video = video[: video.size(0) // self.downsample_video * self.downsample_video]
             
-            return {"video": video, "tokens": text}
+            return {"video": video, "tokens": text, "rel_path": rel_path}
         elif self.modality == "audio":
             audio = load_audio(path)
             
             audio = self.audio_transform(audio)
                   
-            return {"audio": audio, "tokens": text}
+            return {"audio": audio, "tokens": text, "rel_path": rel_path}
         elif self.modality == "audiovisual":
             video = load_video(path)
             audio = load_audio(path)
@@ -111,7 +111,7 @@ class AVDataset_LLM(torch.utils.data.Dataset):
             if self.downsample_video:
                 video = video[: video.size(0) // self.downsample_video * self.downsample_video]
                 
-            return {"video": video, "audio": audio, "tokens": text}
+            return {"video": video, "audio": audio, "tokens": text, "rel_path": rel_path}
         
 
     def __len__(self):

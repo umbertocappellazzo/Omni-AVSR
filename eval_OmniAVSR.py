@@ -242,6 +242,33 @@ def parse_args():
         type=bool,
         help="Removes LayerNorm from the audio and video projectors.",
     )
+
+
+    parser.add_argument(
+        "--results-csv",
+        default=None,
+        type=str,
+        help="Path to a CSV where one row per test sample is written: FILE_NAME, MODEL, "
+             "NOISE_TYPE, SNR_VALUE, GROUND_TRUTH_TEXT, PREDICTED_TEXT. Rows are appended, "
+             "so repeated trainer.test() rounds accumulate in the same file. "
+             "If omitted, no CSV is written and behaviour is unchanged.",
+    )
+    parser.add_argument(
+        "--model-name",
+        default=None,
+        type=str,
+        help="Label written to the MODEL column, e.g. 'Llama-AVSR' or 'Omni-AVSR'. "
+             "Defaults to --llm-model.",
+    )
+    parser.add_argument(
+        "--noise-type",
+        default="",
+        type=str,
+        help="Label written to the NOISE_TYPE column, e.g. 'babble' or 'clean'. "
+             "This is a label only -- it does not change what the pipeline applies.",
+    )
+
+    
     parser.add_argument(
         "--debug",
         action="store_true",
