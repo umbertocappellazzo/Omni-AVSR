@@ -251,6 +251,7 @@ def cli_main():
     datamodule = DataModule_LLM(args, modelmodule.tokenizer, train_num_buckets=args.train_num_buckets)
     trainer = get_trainer(args)
     
+    
     if args.is_matryoshka:
         if args.modality == "audio":
             for rate_audio in args.downsample_ratio_audio:
@@ -275,18 +276,21 @@ def cli_main():
             
     else:
         if args.modality == "audio":
-            print("First evaluation round, ASR!")
-            trainer.test(model=modelmodule, datamodule=datamodule)
+            
+            for snr_level in [4,0,-4,-8,-12]:
+                args.decode_snr_target = snr_level    
+                
+                print("Evaluating at SNR = ", snr_level)
+            
+                trainer.test(model=modelmodule, datamodule=datamodule)
         elif args.modality == "video":
-            print("First evaluation round, VSR!")
-            trainer.test(model=modelmodule, datamodule=datamodule)
-            print("Second evaluation round, VSR!")
-            trainer.test(model=modelmodule, datamodule=datamodule)
-            print("Third evaluation round, VSR!")
             trainer.test(model=modelmodule, datamodule=datamodule)
         else:
-            print("First evaluation round, AVSR!")
-            trainer.test(model=modelmodule, datamodule=datamodule)
+            for snr_level in [4,0,-4,-8,-12]:
+                args.decode_snr_target = snr_level    
+                
+                print("Evaluating at SNR = ", snr_level)
+                trainer.test(model=modelmodule, datamodule=datamodule)
 
 
 if __name__ == "__main__":
