@@ -8,7 +8,7 @@ import torchvision
 
 
 NOISE_FILENAME = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "babble_noise.wav"
+    os.path.dirname(os.path.abspath(__file__)), "pink_noise.wav"
 )
 
 SP_MODEL_PATH = os.path.join(
